@@ -1,23 +1,26 @@
-import { globalIgnores } from 'eslint/config'
+import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
 import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescript'
 import pluginVue from 'eslint-plugin-vue'
-import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
-
-// To allow more languages other than `ts` in `.vue` files, uncomment the following lines:
-// import { configureVueProject } from '@vue/eslint-config-typescript'
-// configureVueProject({ scriptLangs: ['ts', 'tsx'] })
-// More info at https://github.com/vuejs/eslint-config-typescript/#advanced-setup
+// 1. 导入插件生成的配置文件
+import autoImportConfigs from './.eslintrc-auto-import.json' with { type: 'json' }
 
 export default defineConfigWithVueTs(
   {
     name: 'app/files-to-lint',
-    files: ['**/*.{vue,ts,mts,tsx}'],
+    files: ['**/*.{ts,mts,tsx,vue}'],
   },
 
-  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
+  {
+    name: 'app/base-setup',
+    settings: {
+      // 2. 将生成的全局变量配置注入
+      globals: {
+        ...autoImportConfigs.globals,
+      },
+    },
+  },
 
-  ...pluginVue.configs['flat/essential'],
+  pluginVue.configs['flat/essential'],
   vueTsConfigs.recommended,
-
   skipFormatting,
 )
