@@ -37,6 +37,7 @@
             {{ getProcessTypeLabel(scope.row.processType) }}
           </template>
         </el-table-column>
+        <el-table-column prop="deviceCode" label="设备" width="160" />
         <el-table-column prop="parameterName" label="参数名称" width="140" />
         <el-table-column prop="targetValue" label="目标值" width="120" />
         <el-table-column prop="minThreshold" label="下限阈值" width="120" />
@@ -89,6 +90,16 @@
             />
           </el-select>
         </el-form-item>
+        <el-form-item label="设备" prop="deviceCode">
+          <el-select v-model="formData.deviceCode" placeholder="请选择设备" filterable>
+            <el-option
+              v-for="item in deviceList"
+              :key="item.deviceId"
+              :label="item.deviceCode"
+              :value="item.deviceCode"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item label="参数名称" prop="parameterName">
           <el-input v-model="formData.parameterName" placeholder="如: temperature / brix / speed" />
         </el-form-item>
@@ -131,6 +142,7 @@ import {
   type CraftDetail,
   type CraftDetailForm,
 } from '@/api/craft'
+import { getDeviceList, type Device } from '@/api/device'
 import { useDictData } from '@/composables/useDictData'
 import { DICT_TYPE } from '@/constants/dict'
 import type { FormInstance } from 'element-plus'
@@ -147,6 +159,7 @@ const dialogVisible = ref(false)
 const dialogType = ref<'add' | 'edit'>('add')
 const formRef = ref<FormInstance>()
 const tableData = ref<CraftDetail[]>([])
+const deviceList = ref<Device[]>([])
 
 // 工序类型字典
 const {
@@ -175,6 +188,7 @@ const searchForm = reactive<{
 
 const formData = reactive<CraftDetailForm>({
   recipeId: craftId,
+  deviceCode: '',
   processType: '',
   parameterName: '',
   targetValue: 0,
@@ -185,6 +199,7 @@ const formData = reactive<CraftDetailForm>({
 
 const rules = {
   processType: [{ required: true, message: '工序类型不能为空', trigger: 'change' }],
+  deviceCode: [{ required: true, message: '设备不能为空', trigger: 'change' }],
   parameterName: [{ required: true, message: '参数名称不能为空', trigger: 'blur' }],
   targetValue: [{ required: true, message: '目标值不能为空', trigger: 'blur' }],
   maxThreshold: [{ required: true, message: '上限阈值不能为空', trigger: 'blur' }],
@@ -223,6 +238,15 @@ const handleReset = () => {
   getList()
 }
 
+const loadDeviceOptions = async () => {
+  try {
+    const res = await getDeviceList({ pageNum: 1, pageSize: 1000 })
+    deviceList.value = res.data.records
+  } catch (error) {
+    console.error('加载设备列表失败:', error)
+  }
+}
+
 const openDialog = (type: 'add' | 'edit') => {
   dialogType.value = type
   dialogTitle.value = type === 'add' ? '新增参数' : '编辑参数'
@@ -230,6 +254,7 @@ const openDialog = (type: 'add' | 'edit') => {
 
   if (type === 'add') {
     formData.id = undefined
+    formData.deviceCode = ''
     formData.processType = ''
     formData.parameterName = ''
     formData.targetValue = 0
@@ -246,6 +271,7 @@ const handleEdit = (row: CraftDetail) => {
 
   formData.id = row.id
   formData.recipeId = row.recipeId
+  formData.deviceCode = row.deviceCode || ''
   formData.processType = row.processType
   formData.parameterName = row.parameterName
   formData.targetValue = row.targetValue
@@ -303,6 +329,7 @@ const goBack = () => {
 
 onMounted(() => {
   getList()
+  loadDeviceOptions()
   loadProcessTypeDict()
   loadUnitTypeDict()
 })

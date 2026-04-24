@@ -1,6 +1,6 @@
 <template>
   <div class="layout-container">
-    <el-container>
+    <el-container class="layout-shell">
       <!-- 侧边栏 -->
       <el-aside width="200px" class="aside-menu">
         <div class="logo">
@@ -17,6 +17,63 @@
             <el-icon><Monitor /></el-icon>
             <span>控制台</span>
           </el-menu-item>
+          <el-sub-menu index="order">
+            <template #title>
+              <el-icon><ShoppingCart /></el-icon>
+              <span>工单管理</span>
+            </template>
+            <el-menu-item index="/order/order">
+              <span>工单列表</span>
+            </el-menu-item>
+          </el-sub-menu>
+          <el-sub-menu index="material">
+            <template #title>
+              <el-icon><Goods /></el-icon>
+              <span>物料管理</span>
+            </template>
+            <el-menu-item index="/material/material">
+              <span>物料信息</span>
+            </el-menu-item>
+            <el-menu-item index="/material/supplier">
+              <span>供应商</span>
+            </el-menu-item>
+            <el-menu-item index="/material/customer">
+              <span>客户</span>
+            </el-menu-item>
+            <el-menu-item index="/material/lot">
+              <span>进货批次管理</span>
+            </el-menu-item>
+            <el-menu-item index="/material/product">
+              <span>产品管理</span>
+            </el-menu-item>
+            <el-menu-item index="/material/stock">
+              <span>库存查询</span>
+            </el-menu-item>
+          </el-sub-menu>
+          <el-sub-menu index="base">
+            <template #title>
+              <el-icon><DocumentCopy /></el-icon>
+              <span>基础管理</span>
+            </template>
+            <el-menu-item index="/base/recipe">
+              <span>配方管理</span>
+            </el-menu-item>
+            <el-menu-item index="/craft/craft">
+              <span>工艺方案</span>
+            </el-menu-item>
+            <el-menu-item index="/equipment/station">
+              <span>工位管理</span>
+            </el-menu-item>
+            <el-menu-item index="/equipment/device">
+              <span>设备管理</span>
+            </el-menu-item>
+            <el-menu-item index="/base/alarm">
+              <span>异常报警</span>
+            </el-menu-item>
+            <el-menu-item index="/base/ai">
+              <span>AI辅助决策</span>
+            </el-menu-item>
+          </el-sub-menu>
           <el-sub-menu index="system">
             <template #title>
               <el-icon><Setting /></el-icon>
@@ -39,71 +96,11 @@
               <span>字典管理</span>
             </el-menu-item>
           </el-sub-menu>
-          <el-sub-menu index="material">
-            <template #title>
-              <el-icon><Goods /></el-icon>
-              <span>物料管理</span>
-            </template>
-            <el-menu-item index="/material/material">
-              <span>物料信息</span>
-            </el-menu-item>
-            <el-menu-item index="/material/supplier">
-              <span>供应商</span>
-            </el-menu-item>
-            <el-menu-item index="/material/lot">
-              <span>进货批次管理</span>
-            </el-menu-item>
-            <el-menu-item index="/material/product">
-              <span>产品管理</span>
-            </el-menu-item>
-            <el-menu-item index="/material/stock">
-              <span>库存查询</span>
-            </el-menu-item>
-          </el-sub-menu>
-          <el-sub-menu index="base">
-            <template #title>
-              <el-icon><DocumentCopy /></el-icon>
-              <span>基础管理</span>
-            </template>
-            <el-menu-item index="/base/recipe">
-              <span>配方管理</span>
-            </el-menu-item>
-          </el-sub-menu>
-          <el-sub-menu index="craft">
-            <template #title>
-              <el-icon><Setting /></el-icon>
-              <span>工艺管理</span>
-            </template>
-            <el-menu-item index="/craft/craft">
-              <span>工艺方案</span>
-            </el-menu-item>
-          </el-sub-menu>
-          <el-sub-menu index="order">
-            <template #title>
-              <el-icon><ShoppingCart /></el-icon>
-              <span>工单管理</span>
-            </template>
-            <el-menu-item index="/order/order">
-              <span>工单列表</span>
-            </el-menu-item>
-          </el-sub-menu>
-          <el-sub-menu index="equipment">
-            <template #title>
-              <el-icon><Tools /></el-icon>
-              <span>设备管理</span>
-            </template>
-            <el-menu-item index="/equipment/station">
-              <span>工位管理</span>
-            </el-menu-item>
-            <el-menu-item index="/equipment/device">
-              <span>设备管理</span>
-            </el-menu-item>
-          </el-sub-menu>
         </el-menu>
       </el-aside>
 
       <!-- 主体内容 -->
-      <el-container>
+      <el-container class="content-shell">
         <!-- 顶部导航 -->
         <el-header class="header">
           <div class="header-content">
@@ -151,7 +148,6 @@ import {
   Monitor,
   Setting,
   ShoppingCart,
-  Tools,
   User,
   UserFilled,
 } from '@element-plus/icons-vue'
@@ -174,10 +170,13 @@ const currentRoute = computed(() => {
     '/system/dict-type': '字典管理',
     '/material/material': '物料信息',
     '/material/supplier': '供应商管理',
+    '/material/customer': '客户管理',
     '/material/lot': '进货批次管理',
     '/material/product': '产品管理',
     '/material/stock': '库存查询',
     '/base/recipe': '配方管理',
+    '/base/alarm': '异常报警',
+    '/base/ai': 'AI辅助决策',
     '/order/order': '工单管理',
     '/equipment/station': '工位管理',
     '/equipment/device': '设备管理',
@@ -202,11 +201,22 @@ const handleCommand = (command: string) => {
 <style scoped>
 .layout-container {
   height: 100vh;
+  overflow: hidden;
+}
+
+.layout-shell {
+  height: 100%;
 }
 
 .aside-menu {
   background-color: #304156;
-  height: 100vh;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.content-shell {
+  height: 100%;
+  min-width: 0;
 }
 
 .logo {
@@ -250,6 +260,7 @@ const handleCommand = (command: string) => {
 
 .main-content {
   background-color: #f0f2f5;
-  min-height: calc(100vh - 60px);
+  height: calc(100vh - 60px);
+  overflow-y: auto;
 }
 </style>

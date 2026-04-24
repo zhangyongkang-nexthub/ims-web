@@ -46,6 +46,11 @@ const router = createRouter({
           component: () => import('@/views/SupplierManagement.vue'),
         },
         {
+          path: 'material/customer',
+          name: 'CustomerManagement',
+          component: () => import('@/views/CustomerManagement.vue'),
+        },
+        {
           path: 'material/lot',
           name: 'MaterialLotManagement',
           component: () => import('@/views/MaterialLotManagement.vue'),
@@ -70,6 +75,16 @@ const router = createRouter({
           path: 'base/recipe/:recipeId/detail',
           name: 'RecipeDetailManagement',
           component: () => import('@/views/RecipeDetailManagement.vue'),
+        },
+        {
+          path: 'base/alarm',
+          name: 'AlarmManagement',
+          component: () => import('@/views/AlarmManagement.vue'),
+        },
+        {
+          path: 'base/ai',
+          name: 'AiAnalysisManagement',
+          component: () => import('@/views/AiAnalysisManagement.vue'),
         },
         // 工艺模块
         {

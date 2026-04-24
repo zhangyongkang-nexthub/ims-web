@@ -3,47 +3,17 @@
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>系统概览</span>
+          <span>实时看板</span>
         </div>
       </template>
 
       <el-row :gutter="20">
-        <el-col :xs="24" :sm="12" :md="6">
-          <div class="stat-card">
-            <el-icon size="40" color="#409EFF"><User /></el-icon>
+        <el-col :xs="24" :sm="12" :md="8">
+          <div class="stat-card highlight-card">
+            <el-icon size="40" color="#13CE66"><Histogram /></el-icon>
             <div class="stat-info">
-              <div class="stat-value">{{ stats.userCount }}</div>
-              <div class="stat-label">用户总数</div>
-            </div>
-          </div>
-        </el-col>
-
-        <el-col :xs="24" :sm="12" :md="6">
-          <div class="stat-card">
-            <el-icon size="40" color="#67C23A"><UserFilled /></el-icon>
-            <div class="stat-info">
-              <div class="stat-value">{{ stats.roleCount }}</div>
-              <div class="stat-label">角色总数</div>
-            </div>
-          </div>
-        </el-col>
-
-        <el-col :xs="24" :sm="12" :md="6">
-          <div class="stat-card">
-            <el-icon size="40" color="#E6A23C"><Menu /></el-icon>
-            <div class="stat-info">
-              <div class="stat-value">{{ stats.menuCount }}</div>
-              <div class="stat-label">菜单总数</div>
-            </div>
-          </div>
-        </el-col>
-
-        <el-col :xs="24" :sm="12" :md="6">
-          <div class="stat-card">
-            <el-icon size="40" color="#F56C6C"><Key /></el-icon>
-            <div class="stat-info">
-              <div class="stat-value">{{ stats.permCount }}</div>
-              <div class="stat-label">权限总数</div>
+              <div class="stat-value">{{ realtime.productionCount }}</div>
+              <div class="stat-label">实时生产数量</div>
             </div>
           </div>
         </el-col>
@@ -51,59 +21,134 @@
 
       <el-divider />
 
-      <div class="welcome-section">
-        <h2>欢迎使用 IMS 管理系统</h2>
-        <p>这是一个基于 RBAC 的权限管理系统，包含用户、角色、菜单三大核心模块。</p>
-        <el-space wrap>
-          <el-tag type="success">Vue 3</el-tag>
-          <el-tag type="primary">Element Plus</el-tag>
-          <el-tag type="warning">TypeScript</el-tag>
-          <el-tag type="danger">Vite</el-tag>
-          <el-tag type="info">Pinia</el-tag>
-        </el-space>
-      </div>
+      <el-card shadow="never" class="realtime-card">
+        <template #header>
+          <div class="section-header">
+            <span>实时设备看板</span>
+            <el-tag type="success" v-if="realtime.lastUpdated">
+              更新时间：{{ realtime.lastUpdated }}
+            </el-tag>
+            <el-tag type="info" v-else>等待实时数据</el-tag>
+          </div>
+        </template>
+
+        <el-empty v-if="deviceMetricsList.length === 0" description="暂无设备实时数据" />
+
+        <el-row v-else :gutter="16">
+          <el-col
+            v-for="device in deviceMetricsList"
+            :key="device.deviceCode"
+            :xs="24"
+            :sm="12"
+            :lg="8"
+          >
+            <div class="device-card">
+              <div class="device-header">
+                <span class="device-code">{{ device.deviceCode }}</span>
+                <el-tag size="small" type="warning">实时</el-tag>
+              </div>
+              <div class="metric-list">
+                <div class="metric-item">
+                  <span class="metric-label">当前值</span>
+                  <span class="metric-value">{{ device.currentValue }}</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-label">类型</span>
+                  <span class="metric-value">{{ device.processType }}</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-label">生产批次</span>
+                  <span class="metric-value">{{ device.batchNo }}</span>
+                </div>
+              </div>
+            </div>
+          </el-col>
+        </el-row>
+      </el-card>
     </el-card>
   </div>
 </template>
 
 <script setup lang="ts">
-import { getMenuList, getPermissions } from '@/api/menu'
-import { getRoleList } from '@/api/role'
-import { getUserList } from '@/api/user'
-import { Key, Menu, User, UserFilled } from '@element-plus/icons-vue'
-import { onMounted, ref } from 'vue'
+import { onDashboardPush, type DashboardDeviceValue, type DashboardPushData } from '@/utils/alarmWs'
+import { Histogram } from '@element-plus/icons-vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
-const stats = ref({
-  userCount: 0,
-  roleCount: 0,
-  menuCount: 0,
-  permCount: 0,
+const realtime = ref({
+  productionCount: 0,
+  devices: {} as DashboardPushData['devices'],
+  lastUpdated: '',
 })
 
-const loadStats = async () => {
-  try {
-    // 加载用户统计
-    const userRes = await getUserList({ pageNum: 1, pageSize: 1 })
-    stats.value.userCount = userRes.data.total
+let stopDashboardListener: (() => void) | null = null
 
-    // 加载角色统计
-    const roleRes = await getRoleList()
-    stats.value.roleCount = roleRes.data.length
+const formatMetricValue = (value: number) => {
+  return Number.isInteger(value) ? `${value}` : value.toFixed(2)
+}
 
-    // 加载菜单统计
-    const menuRes = await getMenuList()
-    stats.value.menuCount = menuRes.data.length
+const formatTimestamp = (timestamp: number) => {
+  const date = new Date(timestamp)
+  const year = date.getFullYear()
+  const month = `${date.getMonth() + 1}`.padStart(2, '0')
+  const day = `${date.getDate()}`.padStart(2, '0')
+  const hours = `${date.getHours()}`.padStart(2, '0')
+  const minutes = `${date.getMinutes()}`.padStart(2, '0')
+  const seconds = `${date.getSeconds()}`.padStart(2, '0')
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+}
 
-    // 加载权限统计
-    const permRes = await getPermissions()
-    stats.value.permCount = permRes.data.length
-  } catch (error) {
-    console.error('加载统计数据失败:', error)
+const getCurrentValue = (deviceValue: DashboardDeviceValue) => {
+  if (typeof deviceValue === 'number') {
+    return formatMetricValue(deviceValue)
+  }
+
+  if (typeof deviceValue.value === 'number') {
+    return formatMetricValue(deviceValue.value)
+  }
+
+  const fallbackMetric = Object.values(deviceValue).find((value) => typeof value === 'number')
+  return typeof fallbackMetric === 'number' ? formatMetricValue(fallbackMetric) : '-'
+}
+
+const deviceMetricsList = computed(() => {
+  return Object.entries(realtime.value.devices).map(([deviceCode, metrics]) => {
+    if (typeof metrics === 'number') {
+      return {
+        deviceCode,
+        currentValue: formatMetricValue(metrics),
+        processType: '-',
+        batchNo: '-',
+      }
+    }
+
+    return {
+      deviceCode: metrics.deviceCode || deviceCode,
+      currentValue: getCurrentValue(metrics),
+      processType: metrics.processType || '-',
+      batchNo: metrics.batchNo || '-',
+    }
+  })
+})
+
+const updateDashboardRealtime = (data: DashboardPushData) => {
+  realtime.value = {
+    productionCount: data.productionCount,
+    devices: data.devices,
+    lastUpdated: formatTimestamp(data.timestamp),
   }
 }
 
 onMounted(() => {
-  loadStats()
+  stopDashboardListener = onDashboardPush((data) => {
+    updateDashboardRealtime(data)
+  })
+})
+
+onBeforeUnmount(() => {
+  if (stopDashboardListener) {
+    stopDashboardListener()
+    stopDashboardListener = null
+  }
 })
 </script>
 
@@ -127,6 +172,10 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 
+.highlight-card {
+  background: linear-gradient(135deg, #eefbf3 0%, #d9f7e5 100%);
+}
+
 .stat-info {
   flex: 1;
 }
@@ -144,20 +193,60 @@ onMounted(() => {
   color: #666;
 }
 
-.welcome-section {
-  padding: 20px 0;
+.realtime-card {
+  margin-bottom: 24px;
 }
 
-.welcome-section h2 {
-  font-size: 24px;
-  margin: 0 0 16px 0;
-  color: #333;
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
 }
 
-.welcome-section p {
+.device-card {
+  padding: 16px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 16px;
+}
+
+.device-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.device-code {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.metric-list {
+  display: grid;
+  gap: 10px;
+}
+
+.metric-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: #fff;
+  border-radius: 8px;
+}
+
+.metric-label {
   font-size: 14px;
-  color: #666;
-  margin: 0 0 20px 0;
-  line-height: 1.6;
+  color: #6b7280;
+}
+
+.metric-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
 }
 </style>

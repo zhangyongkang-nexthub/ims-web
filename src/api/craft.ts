@@ -27,6 +27,7 @@ export interface CraftForm {
 export interface CraftDetail {
   id: number
   recipeId: number
+  deviceCode?: string
   processType: string
   parameterName: string
   targetValue: number
@@ -39,6 +40,7 @@ export interface CraftDetail {
 export interface CraftDetailForm {
   id?: number
   recipeId: number
+  deviceCode: string
   processType: string
   parameterName: string
   targetValue: number
