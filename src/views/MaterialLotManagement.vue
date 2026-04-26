@@ -3,45 +3,54 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <span>进货批次管理</span>
-          <el-button type="primary" @click="openDialog('add')">新增批次</el-button>
+          <span>材料入库管理</span>
+          <el-button type="primary" @click="openDialog">新增入库</el-button>
         </div>
       </template>
 
-      <!-- 搜索表单 -->
       <div class="search-form">
-        <el-input
-          v-model="searchForm.searchKey"
-          placeholder="搜索进货批次号"
+        <el-select v-model="searchForm.itemId" placeholder="选择物料" clearable class="search-select">
+          <el-option
+            v-for="item in searchItemOptions"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
+        <el-select
+          v-model="searchForm.whId"
+          placeholder="选择仓库"
           clearable
-          class="search-input"
-        />
-        <el-button type="primary" @click="handleSearch">搜索</el-button>
+          class="search-select"
+          @change="handleSearchWarehouseChange"
+        >
+          <el-option v-for="wh in warehouseList" :key="wh.whId" :label="wh.whName" :value="wh.whId" />
+        </el-select>
+        <el-select v-model="searchForm.locId" placeholder="选择库位" clearable class="search-select">
+          <el-option
+            v-for="loc in searchLocationOptions"
+            :key="loc.locId"
+            :label="loc.locCode"
+            :value="loc.locId"
+          />
+        </el-select>
+        <el-button type="primary" @click="handleSearch">查询</el-button>
         <el-button @click="handleReset">重置</el-button>
       </div>
 
-      <!-- 数据表格 -->
       <el-table :data="tableData" stripe style="width: 100%" v-loading="loading">
-        <el-table-column prop="lotNo" label="批次号" width="140" />
-        <el-table-column prop="mname" label="物料名称" width="150" />
-        <el-table-column prop="supName" label="供应商名称" width="150" />
-        <el-table-column prop="arrivalQty" label="到货数量" width="100" />
-        <el-table-column prop="arrivalTime" label="到货时间" width="180" />
+        <el-table-column prop="batchNo" label="批次号" width="170" />
+        <el-table-column prop="itemName" label="物料名称" width="160" />
+        <el-table-column prop="whName" label="仓库" width="140" />
+        <el-table-column prop="locCode" label="库位" width="120" />
+        <el-table-column prop="currentQty" label="库存数量" width="120" />
+        <el-table-column prop="unit" label="单位" width="100" />
+        <el-table-column prop="productionDate" label="生产/进货日期" width="140" />
         <el-table-column prop="expiryDate" label="有效期" width="120" />
-        <el-table-column prop="statusLabel" label="QC状态" width="80" />
-        <el-table-column label="操作" width="200" fixed="right">
-          <template #default="scope">
-            <el-button link type="primary" size="small" @click="handleEdit(scope.row)"
-              >编辑</el-button
-            >
-            <el-button link type="danger" size="small" @click="handleDelete(scope.row)"
-              >删除</el-button
-            >
-          </template>
-        </el-table-column>
+        <el-table-column prop="qcStatusLabel" label="QC状态" width="100" />
+        <el-table-column prop="updateTime" label="更新时间" min-width="170" />
       </el-table>
 
-      <!-- 分页 -->
       <el-pagination
         v-model:current-page="pagination.pageNum"
         v-model:page-size="pagination.pageSize"
@@ -53,46 +62,57 @@
       />
     </el-card>
 
-    <!-- 编辑/新增对话框 -->
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="50%">
-      <el-form
-        ref="formRef"
-        :model="formData"
-        :rules="rules"
-        label-width="120px"
-        label-position="right"
-      >
-        <el-form-item v-if="dialogType === 'edit'" label="批次号">
-          <el-input v-model="formData.lotNo" disabled />
-        </el-form-item>
-        <el-form-item label="物料" prop="mId">
-          <el-select v-model="formData.mId" placeholder="选择物料">
-            <el-option v-for="m in materialList" :key="m.mid" :label="m.mname" :value="m.mid" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="供应商" prop="supId">
-          <el-select v-model="formData.supId" placeholder="选择供应商">
+    <el-dialog v-model="dialogVisible" title="新增入库" width="560px">
+      <el-form ref="formRef" :model="formData" :rules="rules" label-width="120px" label-position="right">
+        <el-form-item label="物料" prop="itemId">
+          <el-select v-model="formData.itemId" placeholder="请选择物料">
             <el-option
-              v-for="s in supplierList"
-              :key="s.supId"
-              :label="s.supName"
-              :value="s.supId"
+              v-for="item in formItemOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="到货数量" prop="arrivalQty">
-          <el-input-number v-model="formData.arrivalQty" :min="0" />
+        <el-form-item label="目标仓库" prop="whId">
+          <el-select v-model="formData.whId" placeholder="请选择仓库" @change="handleFormWarehouseChange">
+            <el-option v-for="wh in warehouseList" :key="wh.whId" :label="wh.whName" :value="wh.whId" />
+          </el-select>
         </el-form-item>
-        <el-form-item label="到货时间" prop="arrivalTime">
-          <el-date-picker v-model="formData.arrivalTime" type="datetime" />
+        <el-form-item label="目标库位" prop="locId">
+          <el-select v-model="formData.locId" placeholder="请选择库位">
+            <el-option
+              v-for="loc in formLocationOptions"
+              :key="loc.locId"
+              :label="loc.locCode"
+              :value="loc.locId"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="入库数量" prop="quantity">
+          <el-input-number v-model="formData.quantity" :min="0" :precision="2" />
+        </el-form-item>
+        <el-form-item label="单位" prop="unit">
+          <el-select v-model="formData.unit" placeholder="请选择单位" clearable>
+            <el-option
+              v-for="item in unitOptions"
+              :key="item.dictValue"
+              :label="item.dictLabel"
+              :value="item.dictValue"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="生产/进货日期" prop="productionDate">
+          <el-date-picker v-model="formData.productionDate" type="date" value-format="YYYY-MM-DD" />
         </el-form-item>
         <el-form-item label="有效期" prop="expiryDate">
-          <el-date-picker v-model="formData.expiryDate" type="date" />
+          <el-date-picker v-model="formData.expiryDate" type="date" value-format="YYYY-MM-DD" />
         </el-form-item>
         <el-form-item label="QC状态" prop="qcStatus">
-          <el-select v-model="formData.qcStatus">
+          <el-select v-model="formData.qcStatus" placeholder="请选择QC状态">
             <el-option label="合格" :value="1" />
-            <el-option label="不合格" :value="0" />
+            <el-option label="待检" :value="2" />
+            <el-option label="不合格" :value="3" />
           </el-select>
         </el-form-item>
       </el-form>
@@ -107,27 +127,30 @@
 </template>
 
 <script setup lang="ts">
+import { getLocationList, type Location } from '@/api/location'
 import { getMaterialList, type Material } from '@/api/material'
-import {
-  addMaterialLot,
-  deleteMaterialLot,
-  getMaterialLotList,
-  updateMaterialLot,
-  type MaterialLot,
-  type MaterialLotForm,
-} from '@/api/materialLot'
-import { getSupplierList, type Supplier } from '@/api/supplier'
+import { addMaterialLot, getMaterialLotList, type MaterialLot, type MaterialLotForm } from '@/api/materialLot'
+import { useDictData } from '@/composables/useDictData'
+import { DICT_TYPE } from '@/constants/dict'
+import { getWarehouseAll, type Warehouse } from '@/api/warehouse'
 import type { FormInstance } from 'element-plus'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { onMounted, reactive, ref } from 'vue'
+import { ElMessage } from 'element-plus'
+import { computed, onMounted, reactive, ref } from 'vue'
+
+interface SelectOption {
+  value: number
+  label: string
+}
 
 const loading = ref(false)
 const dialogVisible = ref(false)
-const dialogType = ref<'add' | 'edit'>('add')
 const formRef = ref<FormInstance>()
 const tableData = ref<MaterialLot[]>([])
 const materialList = ref<Material[]>([])
-const supplierList = ref<Supplier[]>([])
+const warehouseList = ref<Warehouse[]>([])
+const searchLocationOptions = ref<Location[]>([])
+const formLocationOptions = ref<Location[]>([])
+const { options: unitOptions, load: loadUnitDict } = useDictData(DICT_TYPE.UNIT_TYPE)
 
 const pagination = reactive({
   pageNum: 1,
@@ -135,29 +158,42 @@ const pagination = reactive({
   total: 0,
 })
 
-const searchForm = reactive({
-  searchKey: '',
+const searchForm = reactive<{
+  itemId?: number
+  whId?: string
+  locId?: string
+}>({
+  itemId: undefined,
+  whId: undefined,
+  locId: undefined,
 })
 
 const formData = reactive<MaterialLotForm>({
-  lotNo: undefined,
-  mId: 0,
-  supId: 0,
-  arrivalQty: 0,
-  qcStatus: 1,
-  arrivalTime: '',
+  itemId: 0,
+  itemType: 1,
+  whId: '',
+  locId: '',
+  quantity: 0,
+  unit: '',
+  productionDate: '',
   expiryDate: '',
+  qcStatus: 2,
 })
 
 const rules = {
-  mId: [{ required: true, message: '物料不能为空', trigger: 'change' }],
-  supId: [{ required: true, message: '供应商不能为空', trigger: 'change' }],
-  arrivalQty: [{ required: true, message: '到货数量不能为空', trigger: 'blur' }],
-  arrivalTime: [{ required: true, message: '到货时间不能为空', trigger: 'change' }],
-  expiryDate: [{ required: true, message: '有效期不能为空', trigger: 'change' }],
+  itemId: [{ required: true, message: '物料不能为空', trigger: 'change' }],
+  whId: [{ required: true, message: '目标仓库不能为空', trigger: 'change' }],
+  locId: [{ required: true, message: '目标库位不能为空', trigger: 'change' }],
+  quantity: [{ required: true, message: '入库数量不能为空', trigger: 'blur' }],
 }
 
-const dialogTitle = ref('新增批次')
+const searchItemOptions = computed<SelectOption[]>(() => {
+  return materialList.value.map((item) => ({ value: item.mid, label: item.mname }))
+})
+
+const formItemOptions = computed<SelectOption[]>(() => {
+  return materialList.value.map((item) => ({ value: item.mid, label: item.mname }))
+})
 
 const getList = async () => {
   loading.value = true
@@ -165,12 +201,15 @@ const getList = async () => {
     const res = await getMaterialLotList({
       pageNum: pagination.pageNum,
       pageSize: pagination.pageSize,
-      searchKey: searchForm.searchKey,
+      itemId: searchForm.itemId,
+      itemType: 1,
+      whId: searchForm.whId,
+      locId: searchForm.locId,
     })
     tableData.value = res.data.records
     pagination.total = res.data.total
   } catch (error) {
-    console.error('获取进货列表失败:', error)
+    console.error('获取库存批次明细失败:', error)
   } finally {
     loading.value = false
   }
@@ -178,15 +217,47 @@ const getList = async () => {
 
 const loadSelectionData = async () => {
   try {
-    const [matRes, supRes] = await Promise.all([
+    const [materialRes, warehouseRes] = await Promise.all([
       getMaterialList({ pageSize: 1000 }),
-      getSupplierList({ pageSize: 1000 }),
+      getWarehouseAll(),
     ])
-    materialList.value = matRes.data.records
-    supplierList.value = supRes.data.records
+    materialList.value = materialRes.data.records
+    warehouseList.value = warehouseRes.data
   } catch (error) {
-    console.error('加载下拉列表失败:', error)
+    console.error('加载下拉数据失败:', error)
   }
+}
+
+const loadLocationsByWarehouse = async (whId: string, target: 'search' | 'form') => {
+  try {
+    const res = await getLocationList({ whId, pageNum: 1, pageSize: 1000 })
+    if (target === 'search') {
+      searchLocationOptions.value = res.data.records || []
+    } else {
+      formLocationOptions.value = res.data.records || []
+    }
+  } catch (error) {
+    console.error('加载库位失败:', error)
+    if (target === 'search') {
+      searchLocationOptions.value = []
+    } else {
+      formLocationOptions.value = []
+    }
+  }
+}
+
+const handleSearchWarehouseChange = async (value?: string) => {
+  searchForm.locId = undefined
+  if (!value) {
+    searchLocationOptions.value = []
+    return
+  }
+  await loadLocationsByWarehouse(value, 'search')
+}
+
+const handleFormWarehouseChange = async (value: string) => {
+  formData.locId = ''
+  await loadLocationsByWarehouse(value, 'form')
 }
 
 const handleSearch = () => {
@@ -195,40 +266,26 @@ const handleSearch = () => {
 }
 
 const handleReset = () => {
-  searchForm.searchKey = ''
+  searchForm.itemId = undefined
+  searchForm.whId = undefined
+  searchForm.locId = undefined
+  searchLocationOptions.value = []
   pagination.pageNum = 1
   getList()
 }
 
-const openDialog = (type: 'add' | 'edit') => {
-  dialogType.value = type
-  dialogTitle.value = type === 'add' ? '新增批次' : '编辑批次'
+const openDialog = () => {
   dialogVisible.value = true
-
-  if (type === 'add') {
-    formData.lotNo = undefined
-    formData.mId = 0
-    formData.supId = 0
-    formData.arrivalQty = 0
-    formData.qcStatus = 1
-    formData.arrivalTime = ''
-    formData.expiryDate = ''
-  }
-}
-
-const handleEdit = (row: MaterialLot) => {
-  dialogType.value = 'edit'
-  dialogTitle.value = '编辑批次'
-  dialogVisible.value = true
-
-  formData.lotId = row.lotId
-  formData.lotNo = row.lotNo
-  formData.mId = row.mid
-  formData.supId = row.supId
-  formData.arrivalQty = row.arrivalQty
-  formData.qcStatus = row.status
-  formData.arrivalTime = row.arrivalTime || ''
-  formData.expiryDate = row.expiryDate
+  formData.itemId = 0
+  formData.itemType = 1
+  formData.whId = ''
+  formData.locId = ''
+  formData.quantity = 0
+  formData.unit = ''
+  formData.productionDate = ''
+  formData.expiryDate = ''
+  formData.qcStatus = 2
+  formLocationOptions.value = []
 }
 
 const handleSubmit = async () => {
@@ -238,45 +295,30 @@ const handleSubmit = async () => {
     if (!valid) return
 
     try {
-      if (dialogType.value === 'add') {
-        await addMaterialLot(formData)
-        ElMessage.success('新增成功')
-      } else {
-        await updateMaterialLot(formData.lotId!, formData)
-        ElMessage.success('修改成功')
-      }
-
+      await addMaterialLot({
+        itemId: formData.itemId,
+        itemType: 1,
+        whId: formData.whId,
+        locId: formData.locId,
+        quantity: formData.quantity,
+        unit: formData.unit,
+        productionDate: formData.productionDate,
+        expiryDate: formData.expiryDate,
+        qcStatus: formData.qcStatus,
+      })
+      ElMessage.success('入库成功')
       dialogVisible.value = false
       getList()
     } catch (error) {
-      console.error('操作失败:', error)
+      console.error('入库失败:', error)
     }
   })
-}
-
-const handleDelete = (row: MaterialLot) => {
-  ElMessageBox.confirm(`确定删除批次 "${row.lotNo}" 吗?`, '警告', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning',
-  })
-    .then(async () => {
-      try {
-        await deleteMaterialLot(row.lotId)
-        ElMessage.success('删除成功')
-        getList()
-      } catch (error) {
-        console.error('删除失败:', error)
-      }
-    })
-    .catch(() => {
-      ElMessage.info('已取消删除')
-    })
 }
 
 onMounted(() => {
   getList()
   loadSelectionData()
+  loadUnitDict()
 })
 </script>
 
@@ -302,8 +344,8 @@ onMounted(() => {
   flex-wrap: wrap;
 }
 
-.search-input {
-  width: 200px;
+.search-select {
+  width: 180px;
 }
 
 .pagination {

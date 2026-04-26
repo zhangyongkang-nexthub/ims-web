@@ -22,6 +22,13 @@
         <el-table-column prop="unit" label="单位" width="100" />
         <el-table-column prop="lastPurchaseDate" label="最近采购时间" width="180" />
         <el-table-column prop="updateTime" label="更新时间" width="180" />
+        <el-table-column label="操作" width="120" fixed="right">
+          <template #default="scope">
+            <el-button link type="primary" size="small" @click="handleViewDistribution(scope.row)">
+              查看分布
+            </el-button>
+          </template>
+        </el-table-column>
       </el-table>
     </el-card>
   </div>
@@ -30,11 +37,14 @@
 <script setup lang="ts">
 import { getMaterialList, type Material } from '@/api/material'
 import { getMaterialStockList, type MaterialStock } from '@/api/materialStock'
+import { ElMessage } from 'element-plus'
 import { onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 const loading = ref(false)
 const tableData = ref<MaterialStock[]>([])
 const materialList = ref<Material[]>([])
+const router = useRouter()
 
 const searchForm = reactive<{ mId?: number }>({
   mId: undefined,
@@ -68,6 +78,28 @@ const handleSearch = () => {
 const handleReset = () => {
   searchForm.mId = undefined
   getList()
+}
+
+const handleViewDistribution = async (row: MaterialStock) => {
+  const rawItemId =
+    (row as any).materialId ??
+    (row as any).itemId ??
+    (row as any).mId ??
+    (row as any).mid
+  const itemId = rawItemId !== undefined && rawItemId !== null ? String(rawItemId) : ''
+  if (!itemId) {
+    ElMessage.error('未获取到物料ID，无法查询仓库分布')
+    return
+  }
+
+  const itemName =
+    (row as any).materialName ?? (row as any).itemName ?? (row as any).mName ?? (row as any).mname ?? ''
+
+  router.push({
+    name: 'MaterialStockDistribution',
+    params: { itemId },
+    query: { itemName },
+  })
 }
 
 onMounted(() => {

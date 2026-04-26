@@ -65,6 +65,11 @@ const router = createRouter({
           name: 'MaterialStockManagement',
           component: () => import('@/views/MaterialStockManagement.vue'),
         },
+        {
+          path: 'material/stock/distribution/:itemId',
+          name: 'MaterialStockDistribution',
+          component: () => import('@/views/MaterialStockDistribution.vue'),
+        },
         // 基础模块
         {
           path: 'base/recipe',
