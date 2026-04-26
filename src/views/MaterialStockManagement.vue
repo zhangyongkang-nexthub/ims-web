@@ -20,7 +20,6 @@
         <el-table-column prop="materialName" label="物料名称" width="180" />
         <el-table-column prop="totalQuantity" label="库存数量" width="140" />
         <el-table-column prop="unit" label="单位" width="100" />
-        <el-table-column prop="minThreshold" label="最小阈值" width="120" />
         <el-table-column prop="lastPurchaseDate" label="最近采购时间" width="180" />
         <el-table-column prop="updateTime" label="更新时间" width="180" />
       </el-table>

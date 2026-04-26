@@ -6,7 +6,6 @@ export interface MaterialStock {
   materialId: number
   materialName: string
   totalQuantity: number
-  minThreshold: number | null
   unit: string
   lastPurchaseDate: string
   createTime: string

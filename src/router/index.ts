@@ -86,6 +86,16 @@ const router = createRouter({
           name: 'AiAnalysisManagement',
           component: () => import('@/views/AiAnalysisManagement.vue'),
         },
+        {
+          path: 'base/wms',
+          name: 'WmsManagement',
+          component: () => import('@/views/WmsManagement.vue'),
+        },
+        {
+          path: 'base/wms/:whId/locations',
+          name: 'WarehouseLocationManagement',
+          component: () => import('@/views/WarehouseLocationManagement.vue'),
+        },
         // 工艺模块
         {
           path: 'craft/craft',

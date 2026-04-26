@@ -73,6 +73,9 @@
             <el-menu-item index="/base/ai">
               <span>AI辅助决策</span>
             </el-menu-item>
+            <el-menu-item index="/base/wms">
+              <span>仓库与库位管理</span>
+            </el-menu-item>
           </el-sub-menu>
           <el-sub-menu index="system">
             <template #title>
@@ -159,7 +162,12 @@ const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 
-const activeMenu = computed(() => route.path)
+const activeMenu = computed(() => {
+  if (route.path.startsWith('/base/wms/')) {
+    return '/base/wms'
+  }
+  return route.path
+})
 
 const currentRoute = computed(() => {
   const routeMap: Record<string, string> = {
@@ -177,10 +185,15 @@ const currentRoute = computed(() => {
     '/base/recipe': '配方管理',
     '/base/alarm': '异常报警',
     '/base/ai': 'AI辅助决策',
+    '/base/wms': '仓库与库位管理',
     '/order/order': '工单管理',
     '/equipment/station': '工位管理',
     '/equipment/device': '设备管理',
   }
+  if (route.path.startsWith('/base/wms/')) {
+    return '库位管理'
+  }
+
   return routeMap[route.path] || ''
 })
 
