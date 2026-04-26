@@ -82,10 +82,7 @@ const handleReset = () => {
 
 const handleViewDistribution = async (row: MaterialStock) => {
   const rawItemId =
-    (row as any).materialId ??
-    (row as any).itemId ??
-    (row as any).mId ??
-    (row as any).mid
+    (row as any).materialId ?? (row as any).itemId ?? (row as any).mId ?? (row as any).mid
   const itemId = rawItemId !== undefined && rawItemId !== null ? String(rawItemId) : ''
   if (!itemId) {
     ElMessage.error('未获取到物料ID，无法查询仓库分布')
@@ -93,7 +90,11 @@ const handleViewDistribution = async (row: MaterialStock) => {
   }
 
   const itemName =
-    (row as any).materialName ?? (row as any).itemName ?? (row as any).mName ?? (row as any).mname ?? ''
+    (row as any).materialName ??
+    (row as any).itemName ??
+    (row as any).mName ??
+    (row as any).mname ??
+    ''
 
   router.push({
     name: 'MaterialStockDistribution',

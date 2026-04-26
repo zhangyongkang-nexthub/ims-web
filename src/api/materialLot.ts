@@ -102,13 +102,15 @@ export function getMaterialLotList(params: {
   whId?: string
   locId?: string
 }) {
-  return request.get<ApiResponse<PageResult<any>>>('/stock-lots/detail', { params }).then((res) => ({
-    ...res,
-    data: {
-      ...res.data,
-      records: (res.data.records || []).map(normalizeMaterialLot),
-    },
-  }))
+  return request
+    .get<ApiResponse<PageResult<any>>>('/stock-lots/detail', { params })
+    .then((res) => ({
+      ...res,
+      data: {
+        ...res.data,
+        records: (res.data.records || []).map(normalizeMaterialLot),
+      },
+    }))
 }
 
 /**

@@ -9,7 +9,12 @@
       </template>
 
       <div class="search-form">
-        <el-select v-model="searchForm.itemId" placeholder="选择物料" clearable class="search-select">
+        <el-select
+          v-model="searchForm.itemId"
+          placeholder="选择物料"
+          clearable
+          class="search-select"
+        >
           <el-option
             v-for="item in searchItemOptions"
             :key="item.value"
@@ -24,9 +29,19 @@
           class="search-select"
           @change="handleSearchWarehouseChange"
         >
-          <el-option v-for="wh in warehouseList" :key="wh.whId" :label="wh.whName" :value="wh.whId" />
+          <el-option
+            v-for="wh in warehouseList"
+            :key="wh.whId"
+            :label="wh.whName"
+            :value="wh.whId"
+          />
         </el-select>
-        <el-select v-model="searchForm.locId" placeholder="选择库位" clearable class="search-select">
+        <el-select
+          v-model="searchForm.locId"
+          placeholder="选择库位"
+          clearable
+          class="search-select"
+        >
           <el-option
             v-for="loc in searchLocationOptions"
             :key="loc.locId"
@@ -63,7 +78,13 @@
     </el-card>
 
     <el-dialog v-model="dialogVisible" title="新增入库" width="560px">
-      <el-form ref="formRef" :model="formData" :rules="rules" label-width="120px" label-position="right">
+      <el-form
+        ref="formRef"
+        :model="formData"
+        :rules="rules"
+        label-width="120px"
+        label-position="right"
+      >
         <el-form-item label="物料" prop="itemId">
           <el-select v-model="formData.itemId" placeholder="请选择物料">
             <el-option
@@ -75,8 +96,17 @@
           </el-select>
         </el-form-item>
         <el-form-item label="目标仓库" prop="whId">
-          <el-select v-model="formData.whId" placeholder="请选择仓库" @change="handleFormWarehouseChange">
-            <el-option v-for="wh in warehouseList" :key="wh.whId" :label="wh.whName" :value="wh.whId" />
+          <el-select
+            v-model="formData.whId"
+            placeholder="请选择仓库"
+            @change="handleFormWarehouseChange"
+          >
+            <el-option
+              v-for="wh in warehouseList"
+              :key="wh.whId"
+              :label="wh.whName"
+              :value="wh.whId"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="目标库位" prop="locId">
@@ -129,10 +159,15 @@
 <script setup lang="ts">
 import { getLocationList, type Location } from '@/api/location'
 import { getMaterialList, type Material } from '@/api/material'
-import { addMaterialLot, getMaterialLotList, type MaterialLot, type MaterialLotForm } from '@/api/materialLot'
+import {
+  addMaterialLot,
+  getMaterialLotList,
+  type MaterialLot,
+  type MaterialLotForm,
+} from '@/api/materialLot'
+import { getWarehouseAll, type Warehouse } from '@/api/warehouse'
 import { useDictData } from '@/composables/useDictData'
 import { DICT_TYPE } from '@/constants/dict'
-import { getWarehouseAll, type Warehouse } from '@/api/warehouse'
 import type { FormInstance } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { computed, onMounted, reactive, ref } from 'vue'

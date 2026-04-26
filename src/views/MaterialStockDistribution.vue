@@ -15,7 +15,12 @@
         <el-table-column prop="unit" label="单位" width="100" />
         <el-table-column label="操作" width="120" fixed="right">
           <template #default="scope">
-            <el-button link type="primary" size="small" @click="handleViewWarehouseDetail(scope.row)">
+            <el-button
+              link
+              type="primary"
+              size="small"
+              @click="handleViewWarehouseDetail(scope.row)"
+            >
               库位明细
             </el-button>
           </template>
@@ -30,7 +35,10 @@
         </div>
       </template>
 
-      <el-empty v-if="!detailLoading && detailData.length === 0" description="请选择仓库查看库位明细" />
+      <el-empty
+        v-if="!detailLoading && detailData.length === 0"
+        description="请选择仓库查看库位明细"
+      />
 
       <el-table v-else :data="detailData" stripe style="width: 100%">
         <el-table-column prop="locCode" label="库位" width="120" />
@@ -52,7 +60,12 @@
     </el-card>
 
     <el-dialog v-model="transferDialogVisible" title="库存移库" width="520px">
-      <el-form ref="transferFormRef" :model="transferForm" :rules="transferRules" label-width="110px">
+      <el-form
+        ref="transferFormRef"
+        :model="transferForm"
+        :rules="transferRules"
+        label-width="110px"
+      >
         <el-form-item label="源仓库">
           <el-input :value="transferSourceWhText" disabled />
         </el-form-item>
@@ -63,13 +76,27 @@
           <el-input :value="transferSourceQtyText" disabled />
         </el-form-item>
         <el-form-item label="目标仓库" prop="targetWhId">
-          <el-select v-model="transferForm.targetWhId" placeholder="请选择目标仓库" @change="handleTransferTargetWhChange">
-            <el-option v-for="wh in transferWarehouseList" :key="wh.whId" :label="wh.whName" :value="wh.whId" />
+          <el-select
+            v-model="transferForm.targetWhId"
+            placeholder="请选择目标仓库"
+            @change="handleTransferTargetWhChange"
+          >
+            <el-option
+              v-for="wh in transferWarehouseList"
+              :key="wh.whId"
+              :label="wh.whName"
+              :value="wh.whId"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="目标库位" prop="targetLocId">
           <el-select v-model="transferForm.targetLocId" placeholder="请选择目标库位">
-            <el-option v-for="loc in transferLocationList" :key="loc.locId" :label="loc.locCode" :value="loc.locId" />
+            <el-option
+              v-for="loc in transferLocationList"
+              :key="loc.locId"
+              :label="loc.locCode"
+              :value="loc.locId"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="移库数量" prop="transferQty">
@@ -78,22 +105,24 @@
       </el-form>
       <template #footer>
         <el-button @click="transferDialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="transferSubmitting" @click="handleTransferSubmit">确定</el-button>
+        <el-button type="primary" :loading="transferSubmitting" @click="handleTransferSubmit"
+          >确定</el-button
+        >
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
+import { getLocationList, type Location } from '@/api/location'
 import {
   getMaterialLotList,
   getMaterialStockSummary,
   transferMaterialLot,
-  type MaterialLotTransferForm,
   type MaterialLot,
+  type MaterialLotTransferForm,
   type MaterialStockSummary,
 } from '@/api/materialLot'
-import { getLocationList, type Location } from '@/api/location'
 import { getWarehouseAll, type Warehouse } from '@/api/warehouse'
 import type { FormInstance } from 'element-plus'
 import { ElMessage } from 'element-plus'
