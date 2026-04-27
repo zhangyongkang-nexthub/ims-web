@@ -6,8 +6,11 @@ export interface MaterialLot {
   lotStockId: string
   itemId: number
   itemType: number
+  itemCode?: string
   itemName?: string
   batchNo?: string
+  supId?: string
+  supName?: string
   whId: string
   whName?: string
   locId: string
@@ -15,9 +18,10 @@ export interface MaterialLot {
   currentQty: number
   unit?: string
   productionDate?: string
+  produceDate?: string
   expiryDate?: string
-  qcStatus?: number
-  qcStatusLabel?: string
+  receiptStatus?: number
+  receiptStatusLabel?: string
   updateTime?: string
 }
 
@@ -32,7 +36,6 @@ export interface MaterialLotForm {
   unit?: string
   productionDate?: string
   expiryDate?: string
-  qcStatus?: number
 }
 
 // 分页响应
@@ -58,23 +61,62 @@ export interface MaterialLotTransferForm {
   transferQty: number
 }
 
+export interface MaterialLotRegisterForm {
+  itemId: number
+  itemType: number
+  supId?: number
+  supplierId?: number
+  totalQuantity: number
+  unit?: string
+  productionDate?: string
+  expiryDate?: string
+}
+
+export interface MaterialLotRegisterInfo {
+  batchNo: string
+  itemId: number
+  itemType: number
+  itemName?: string
+  totalQuantity: number
+  putAwayQuantity: number
+  pendingQuantity: number
+  unit?: string
+  productionDate?: string
+  expiryDate?: string
+  status?: number
+  statusLabel?: string
+  createTime?: string
+}
+
+export interface MaterialLotPutAwayForm {
+  batchNo: string
+  whId: string
+  locId: string
+  quantity: number
+}
+
 function normalizeMaterialLot(raw: any): MaterialLot {
+  const productionDate = raw?.productionDate ?? raw?.produceDate
   return {
     lotStockId: String(raw?.lotStockId ?? ''),
     itemId: Number(raw?.itemId ?? 0),
     itemType: Number(raw?.itemType ?? 1),
+    itemCode: raw?.itemCode,
     itemName: raw?.itemName,
     batchNo: raw?.batchNo,
+    supId: raw?.supId !== undefined && raw?.supId !== null ? String(raw.supId) : undefined,
+    supName: raw?.supName,
     whId: String(raw?.whId ?? ''),
     whName: raw?.whName,
     locId: String(raw?.locId ?? ''),
     locCode: raw?.locCode,
     currentQty: Number(raw?.currentQty ?? 0),
     unit: raw?.unit,
-    productionDate: raw?.productionDate,
+    productionDate,
+    produceDate: raw?.produceDate,
     expiryDate: raw?.expiryDate,
-    qcStatus: raw?.qcStatus,
-    qcStatusLabel: raw?.qcStatusLabel,
+    receiptStatus: raw?.receiptStatus,
+    receiptStatusLabel: raw?.receiptStatusLabel,
     updateTime: raw?.updateTime,
   }
 }
@@ -91,12 +133,32 @@ function normalizeMaterialStockSummary(raw: any): MaterialStockSummary {
   }
 }
 
+function normalizeMaterialLotRegisterInfo(raw: any): MaterialLotRegisterInfo {
+  const productionDate = raw?.productionDate ?? raw?.produceDate
+  return {
+    batchNo: String(raw?.batchNo ?? ''),
+    itemId: Number(raw?.itemId ?? 0),
+    itemType: Number(raw?.itemType ?? 1),
+    itemName: raw?.itemName,
+    totalQuantity: Number(raw?.totalQuantity ?? 0),
+    putAwayQuantity: Number(raw?.putAwayQuantity ?? 0),
+    pendingQuantity: Number(raw?.pendingQuantity ?? 0),
+    unit: raw?.unit,
+    productionDate,
+    expiryDate: raw?.expiryDate,
+    status: raw?.status,
+    statusLabel: raw?.statusLabel,
+    createTime: raw?.createTime,
+  }
+}
+
 /**
  * 分页查询库存批次库位明细
  */
 export function getMaterialLotList(params: {
   pageNum?: number
   pageSize?: number
+  itemCode?: string
   itemId?: string | number
   itemType?: number
   whId?: string
@@ -121,6 +183,42 @@ export function addMaterialLot(data: MaterialLotForm) {
 }
 
 /**
+ * 两步入库：第一步登记
+ */
+export function registerMaterialLot(data: MaterialLotRegisterForm) {
+  const payload = {
+    ...data,
+    ...(data.supId !== undefined ? { supplierId: data.supId } : {}),
+    ...(data.supId !== undefined ? { supplier_id: data.supId } : {}),
+    ...(data.supplierId !== undefined ? { supplier_id: data.supplierId } : {}),
+    ...(data.productionDate ? { production_date: data.productionDate } : {}),
+    ...(data.expiryDate ? { expiry_date: data.expiryDate } : {}),
+  }
+
+  return request.post<ApiResponse<any>>('/stock-lots/register', payload).then((res) => ({
+    ...res,
+    data: normalizeMaterialLotRegisterInfo(res.data),
+  }))
+}
+
+/**
+ * 两步入库：第二步上架入位
+ */
+export function putAwayMaterialLot(data: MaterialLotPutAwayForm) {
+  return request.post<ApiResponse>('/stock-lots/put-away', data)
+}
+
+/**
+ * 查询批次登记与上架进度
+ */
+export function getMaterialLotRegisterDetail(batchNo: string) {
+  return request.get<ApiResponse<any>>(`/stock-lots/register/${batchNo}`).then((res) => ({
+    ...res,
+    data: normalizeMaterialLotRegisterInfo(res.data),
+  }))
+}
+
+/**
  * 库存批次移库
  */
 export function transferMaterialLot(data: MaterialLotTransferForm) {
@@ -131,11 +229,15 @@ export function transferMaterialLot(data: MaterialLotTransferForm) {
  * 查询库存汇总（按物料+仓库）
  */
 export function getMaterialStockSummary(params: {
+  itemCode?: string
   itemId?: string | number
   itemType?: number
   whId?: string
 }) {
-  const query: { itemId?: string; itemType?: number; whId?: string } = {}
+  const query: { itemCode?: string; itemId?: string; itemType?: number; whId?: string } = {}
+  if (params.itemCode) {
+    query.itemCode = params.itemCode
+  }
   if (params.itemId !== undefined && params.itemId !== null) {
     query.itemId = String(params.itemId)
   }

@@ -56,6 +56,11 @@ const router = createRouter({
           component: () => import('@/views/MaterialLotManagement.vue'),
         },
         {
+          path: 'material/lot/register',
+          name: 'MaterialLotRegister',
+          component: () => import('@/views/MaterialLotRegister.vue'),
+        },
+        {
           path: 'material/product',
           name: 'ProductManagement',
           component: () => import('@/views/ProductManagement.vue'),
@@ -69,6 +74,11 @@ const router = createRouter({
           path: 'material/stock/distribution/:itemId',
           name: 'MaterialStockDistribution',
           component: () => import('@/views/MaterialStockDistribution.vue'),
+        },
+        {
+          path: 'stock/product',
+          name: 'ProductStockManagement',
+          component: () => import('@/views/ProductStockManagement.vue'),
         },
         // 基础模块
         {

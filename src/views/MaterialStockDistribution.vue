@@ -43,11 +43,15 @@
       <el-table v-else :data="detailData" stripe style="width: 100%">
         <el-table-column prop="locCode" label="库位" width="120" />
         <el-table-column prop="batchNo" label="批次号" width="170" />
+        <el-table-column prop="supName" label="供应商" width="160">
+          <template #default="scope">
+            {{ scope.row.supName || '--' }}
+          </template>
+        </el-table-column>
         <el-table-column prop="currentQty" label="库存数量" width="120" />
         <el-table-column prop="unit" label="单位" width="100" />
         <el-table-column prop="productionDate" label="生产/进货日期" width="140" />
         <el-table-column prop="expiryDate" label="有效期" width="120" />
-        <el-table-column prop="qcStatusLabel" label="QC状态" width="100" />
         <el-table-column prop="updateTime" label="更新时间" min-width="170" />
         <el-table-column label="操作" width="100" fixed="right">
           <template #default="scope">

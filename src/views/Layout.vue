@@ -25,6 +25,12 @@
             <el-menu-item index="/order/order">
               <span>工单列表</span>
             </el-menu-item>
+            <el-menu-item index="/base/recipe">
+              <span>配方管理</span>
+            </el-menu-item>
+            <el-menu-item index="/craft/craft">
+              <span>工艺方案</span>
+            </el-menu-item>
           </el-sub-menu>
           <el-sub-menu index="material">
             <template #title>
@@ -40,14 +46,20 @@
             <el-menu-item index="/material/customer">
               <span>客户</span>
             </el-menu-item>
-            <el-menu-item index="/material/lot">
-              <span>进货批次管理</span>
-            </el-menu-item>
             <el-menu-item index="/material/product">
               <span>产品管理</span>
             </el-menu-item>
+          </el-sub-menu>
+          <el-sub-menu index="stock">
+            <template #title>
+              <el-icon><Box /></el-icon>
+              <span>库存管理</span>
+            </template>
             <el-menu-item index="/material/stock">
-              <span>库存查询</span>
+              <span>材料库存与入库</span>
+            </el-menu-item>
+            <el-menu-item index="/stock/product">
+              <span>产成品库存</span>
             </el-menu-item>
           </el-sub-menu>
           <el-sub-menu index="base">
@@ -55,18 +67,6 @@
               <el-icon><DocumentCopy /></el-icon>
               <span>基础管理</span>
             </template>
-            <el-menu-item index="/base/recipe">
-              <span>配方管理</span>
-            </el-menu-item>
-            <el-menu-item index="/craft/craft">
-              <span>工艺方案</span>
-            </el-menu-item>
-            <el-menu-item index="/equipment/station">
-              <span>工位管理</span>
-            </el-menu-item>
-            <el-menu-item index="/equipment/device">
-              <span>设备管理</span>
-            </el-menu-item>
             <el-menu-item index="/base/alarm">
               <span>异常报警</span>
             </el-menu-item>
@@ -75,6 +75,18 @@
             </el-menu-item>
             <el-menu-item index="/base/wms">
               <span>仓库与库位管理</span>
+            </el-menu-item>
+          </el-sub-menu>
+          <el-sub-menu index="equipment">
+            <template #title>
+              <el-icon><Monitor /></el-icon>
+              <span>设备管理</span>
+            </template>
+            <el-menu-item index="/equipment/station">
+              <span>工位管理</span>
+            </el-menu-item>
+            <el-menu-item index="/equipment/device">
+              <span>设备管理</span>
             </el-menu-item>
           </el-sub-menu>
           <el-sub-menu index="system">
@@ -144,6 +156,7 @@ import { useUserStore } from '@/stores/user'
 import {
   ArrowDown,
   Avatar,
+  Box,
   Collection,
   DocumentCopy,
   Goods,
@@ -166,6 +179,9 @@ const activeMenu = computed(() => {
   if (route.path.startsWith('/base/wms/')) {
     return '/base/wms'
   }
+  if (route.path.startsWith('/material/lot') || route.path.startsWith('/material/stock')) {
+    return '/material/stock'
+  }
   return route.path
 })
 
@@ -179,9 +195,11 @@ const currentRoute = computed(() => {
     '/material/material': '物料信息',
     '/material/supplier': '供应商管理',
     '/material/customer': '客户管理',
-    '/material/lot': '进货批次管理',
+    '/material/lot': '材料入库',
+    '/material/lot/register': '材料登记',
     '/material/product': '产品管理',
-    '/material/stock': '库存查询',
+    '/material/stock': '材料库存',
+    '/stock/product': '产成品库存',
     '/base/recipe': '配方管理',
     '/base/alarm': '异常报警',
     '/base/ai': 'AI辅助决策',

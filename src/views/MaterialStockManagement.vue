@@ -7,6 +7,11 @@
         </div>
       </template>
 
+      <el-tabs :model-value="activeTab" @tab-change="handleTabChange" class="page-tabs">
+        <el-tab-pane label="库存查询" name="stock" />
+        <el-tab-pane label="材料入库" name="lot" />
+      </el-tabs>
+
       <div class="search-form">
         <el-select v-model="searchForm.mId" placeholder="选择物料" clearable class="search-select">
           <el-option v-for="m in materialList" :key="m.mid" :label="m.mname" :value="m.mid" />
@@ -38,12 +43,13 @@
 import { getMaterialList, type Material } from '@/api/material'
 import { getMaterialStockList, type MaterialStock } from '@/api/materialStock'
 import { ElMessage } from 'element-plus'
-import { onMounted, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 const loading = ref(false)
 const tableData = ref<MaterialStock[]>([])
 const materialList = ref<Material[]>([])
+const route = useRoute()
 const router = useRouter()
 
 const searchForm = reactive<{ mId?: number }>({
@@ -78,6 +84,16 @@ const handleSearch = () => {
 const handleReset = () => {
   searchForm.mId = undefined
   getList()
+}
+
+const activeTab = computed(() => (route.path.startsWith('/material/lot') ? 'lot' : 'stock'))
+
+const handleTabChange = (name: string | number) => {
+  if (name === 'lot') {
+    router.push('/material/lot')
+    return
+  }
+  router.push('/material/stock')
 }
 
 const handleViewDistribution = async (row: MaterialStock) => {
@@ -129,6 +145,10 @@ onMounted(() => {
   gap: 10px;
   margin-bottom: 20px;
   flex-wrap: wrap;
+}
+
+.page-tabs {
+  margin-bottom: 12px;
 }
 
 .search-select {
