@@ -14,7 +14,12 @@
       <el-tabs v-model="activeTab" @tab-change="handleTabChange">
         <el-tab-pane label="库存查询" name="stock">
           <div class="search-form">
-            <el-select v-model="stockSearch.pId" placeholder="选择产品" clearable class="search-select">
+            <el-select
+              v-model="stockSearch.pId"
+              placeholder="选择产品"
+              clearable
+              class="search-select"
+            >
               <el-option v-for="p in productList" :key="p.pid" :label="p.pname" :value="p.pid" />
             </el-select>
             <el-button type="primary" @click="handleStockSearch">查询</el-button>
@@ -29,6 +34,18 @@
             <el-table-column prop="lastStockInTime" label="最近入库时间" width="180" />
             <el-table-column prop="lastStockOutTime" label="最近出库时间" width="180" />
             <el-table-column prop="updateTime" label="更新时间" min-width="180" />
+            <el-table-column label="操作" width="120" fixed="right">
+              <template #default="scope">
+                <el-button
+                  link
+                  type="primary"
+                  size="small"
+                  @click="handleViewDistribution(scope.row)"
+                >
+                  查看分布
+                </el-button>
+              </template>
+            </el-table-column>
           </el-table>
 
           <el-pagination
@@ -44,11 +61,26 @@
 
         <el-tab-pane label="产品入库" name="pending">
           <div class="search-form">
-            <el-select v-model="pendingSearch.pId" placeholder="选择产品" clearable class="search-select">
+            <el-select
+              v-model="pendingSearch.pId"
+              placeholder="选择产品"
+              clearable
+              class="search-select"
+            >
               <el-option v-for="p in productList" :key="p.pid" :label="p.pname" :value="p.pid" />
             </el-select>
-            <el-select v-model="pendingSearch.state" placeholder="入库状态" clearable class="search-select">
-              <el-option v-for="item in pendingStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
+            <el-select
+              v-model="pendingSearch.state"
+              placeholder="入库状态"
+              clearable
+              class="search-select"
+            >
+              <el-option
+                v-for="item in pendingStatusOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
             </el-select>
             <el-button type="primary" @click="handlePendingSearch">查询</el-button>
             <el-button @click="handlePendingReset">重置</el-button>
@@ -93,14 +125,26 @@
 
         <el-tab-pane label="出库记录" name="ship">
           <div class="search-form">
-            <el-input v-model="shipSearch.batchNo" placeholder="批次号" clearable class="search-input" />
-            <el-input v-model="shipSearch.customerName" placeholder="客户名称" clearable class="search-input" />
+            <el-input
+              v-model="shipSearch.batchNo"
+              placeholder="批次号"
+              clearable
+              class="search-input"
+            />
+            <el-input
+              v-model="shipSearch.customerName"
+              placeholder="客户名称"
+              clearable
+              class="search-input"
+            />
             <el-button type="primary" @click="handleShipSearch">查询</el-button>
             <el-button @click="handleShipReset">重置</el-button>
           </div>
 
           <el-table :data="shipTableData" stripe v-loading="shipLoading">
             <el-table-column prop="shipNo" label="出库单号" width="210" />
+            <el-table-column prop="woNo" label="工单号" width="180" />
+            <el-table-column prop="productName" label="产品名称" width="180" />
             <el-table-column prop="batchNo" label="批次号" width="160" />
             <el-table-column prop="customerName" label="客户名称" width="180" />
             <el-table-column prop="quantity" label="数量" width="120" />
@@ -132,15 +176,35 @@
         />
       </template>
 
-      <el-form ref="putAwayFormRef" :model="putAwayForm" :rules="putAwayRules" inline class="putaway-form">
+      <el-form
+        ref="putAwayFormRef"
+        :model="putAwayForm"
+        :rules="putAwayRules"
+        inline
+        class="putaway-form"
+      >
         <el-form-item label="目标仓库" prop="whId">
-          <el-select v-model="putAwayForm.whId" placeholder="请选择仓库" @change="handlePutAwayWhChange">
-            <el-option v-for="wh in warehouseList" :key="wh.whId" :label="wh.whName" :value="wh.whId" />
+          <el-select
+            v-model="putAwayForm.whId"
+            placeholder="请选择仓库"
+            @change="handlePutAwayWhChange"
+          >
+            <el-option
+              v-for="wh in warehouseList"
+              :key="wh.whId"
+              :label="wh.whName"
+              :value="wh.whId"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="目标库位" prop="locId">
           <el-select v-model="putAwayForm.locId" placeholder="请选择库位">
-            <el-option v-for="loc in putAwayLocationList" :key="loc.locId" :label="loc.locCode" :value="loc.locId" />
+            <el-option
+              v-for="loc in putAwayLocationList"
+              :key="loc.locId"
+              :label="loc.locCode"
+              :value="loc.locId"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="上架数量" prop="quantity">
@@ -164,48 +228,62 @@
         <el-table-column prop="quantity" label="上架数量" width="120" />
         <el-table-column label="操作" width="100" fixed="right">
           <template #default="scope">
-            <el-button link type="danger" size="small" @click="removePutAwayPlan(scope.$index)">删除</el-button>
+            <el-button link type="danger" size="small" @click="removePutAwayPlan(scope.$index)"
+              >删除</el-button
+            >
           </template>
         </el-table-column>
       </el-table>
 
       <template #footer>
         <el-button @click="putAwayDialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="putAwaySubmitting" @click="handleSubmitPutAwayPlan">提交上架清单</el-button>
+        <el-button type="primary" :loading="putAwaySubmitting" @click="handleSubmitPutAwayPlan"
+          >提交上架清单</el-button
+        >
       </template>
     </el-dialog>
 
-    <el-dialog v-model="shipDialogVisible" title="产品出库" width="500px">
+    <el-dialog v-model="shipDialogVisible" title="产品出库（按工单）" width="560px">
       <el-form ref="shipFormRef" :model="shipForm" :rules="shipRules" label-width="100px">
-        <el-form-item label="产品" prop="pId">
-          <el-select v-model="shipForm.pId" placeholder="请选择产品">
-            <el-option v-for="p in productList" :key="p.pid" :label="p.pname" :value="p.pid" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="数量" prop="quantity">
-          <el-input-number v-model="shipForm.quantity" :min="0" :precision="2" />
-        </el-form-item>
-        <el-form-item label="客户名称" prop="customerName">
-          <el-select v-model="shipForm.customerName" placeholder="请选择客户" clearable filterable>
+        <el-form-item label="工单" prop="woId">
+          <el-select
+            v-model="shipForm.woId"
+            placeholder="请选择客户工单"
+            filterable
+            style="width: 100%"
+          >
             <el-option
-              v-for="c in customerList"
-              :key="c.custId"
-              :label="c.custName"
-              :value="c.custName"
+              v-for="order in shippableOrderList"
+              :key="order.woId"
+              :label="`${order.woNo} | ${order.productName || '-'} | ${order.customerName || '未绑定客户'} | 订单可出:${order.shippableQty ?? 0} | 库存:${order.currentStock ?? 0}`"
+              :value="order.woId"
             />
           </el-select>
+        </el-form-item>
+        <el-form-item label="产品">
+          <el-input :model-value="selectedShippableOrder?.productName || '-'" disabled />
+        </el-form-item>
+        <el-form-item label="客户">
+          <el-input :model-value="selectedShippableOrder?.customerName || '-'" disabled />
+        </el-form-item>
+        <el-form-item label="可出库库存">
+          <el-input :model-value="String(shipMaxQty)" disabled />
+        </el-form-item>
+        <el-form-item label="数量" prop="quantity">
+          <el-input-number v-model="shipForm.quantity" :min="0" :max="shipMaxQty" :precision="2" />
         </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="shipDialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="shipSubmitting" @click="handleShipSubmit">确定</el-button>
+        <el-button type="primary" :loading="shipSubmitting" @click="handleShipSubmit"
+          >确定</el-button
+        >
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { getCustomerList, type Customer } from '@/api/customer'
 import { getLocationList, type Location } from '@/api/location'
 import { getProductList, type Product } from '@/api/product'
 import {
@@ -213,6 +291,7 @@ import {
   getProductPendingList,
   getProductShipRecordList,
   getProductStockList,
+  getShippableOrders,
   putAwayProductPending,
   shipProductStock,
   type ProductPending,
@@ -220,16 +299,20 @@ import {
   type ProductShipForm,
   type ProductShipRecord,
   type ProductStock,
+  type ShippableOrder,
 } from '@/api/productStock'
 import { getWarehouseAll, type Warehouse } from '@/api/warehouse'
 import type { FormInstance } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { computed, onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const activeTab = ref<'stock' | 'pending' | 'ship'>('stock')
 const productList = ref<Product[]>([])
-const customerList = ref<Customer[]>([])
 const warehouseList = ref<Warehouse[]>([])
+const shippableOrderList = ref<ShippableOrder[]>([])
 
 const stockLoading = ref(false)
 const stockTableData = ref<ProductStock[]>([])
@@ -238,12 +321,18 @@ const stockPagination = reactive({ pageNum: 1, pageSize: 10, total: 0 })
 
 const pendingLoading = ref(false)
 const pendingTableData = ref<ProductPending[]>([])
-const pendingSearch = reactive<{ pId?: number; state?: number }>({ pId: undefined, state: undefined })
+const pendingSearch = reactive<{ pId?: number; state?: number }>({
+  pId: undefined,
+  state: undefined,
+})
 const pendingPagination = reactive({ pageNum: 1, pageSize: 10, total: 0 })
 
 const shipLoading = ref(false)
 const shipTableData = ref<ProductShipRecord[]>([])
-const shipSearch = reactive<{ batchNo: string; customerName: string }>({ batchNo: '', customerName: '' })
+const shipSearch = reactive<{ batchNo: string; customerName: string }>({
+  batchNo: '',
+  customerName: '',
+})
 const shipPagination = reactive({ pageNum: 1, pageSize: 10, total: 0 })
 
 const pendingStatusOptions = [
@@ -276,9 +365,8 @@ const shipDialogVisible = ref(false)
 const shipSubmitting = ref(false)
 const shipFormRef = ref<FormInstance>()
 const shipForm = reactive<ProductShipForm>({
-  pId: 0,
+  woId: '',
   quantity: 0,
-  customerName: '',
 })
 
 const putAwayRules = {
@@ -288,9 +376,19 @@ const putAwayRules = {
 }
 
 const shipRules = {
-  pId: [{ required: true, message: '产品不能为空', trigger: 'change' }],
+  woId: [{ required: true, message: '请选择工单', trigger: 'change' }],
   quantity: [{ required: true, message: '数量不能为空', trigger: 'blur' }],
 }
+
+const selectedShippableOrder = computed(() => {
+  return shippableOrderList.value.find((item) => item.woId === shipForm.woId)
+})
+
+const shipMaxQty = computed(() => {
+  const orderShippable = Number(selectedShippableOrder.value?.shippableQty ?? 0)
+  const stockAvailable = Number(selectedShippableOrder.value?.currentStock ?? 0)
+  return Math.max(0, Math.min(orderShippable, stockAvailable))
+})
 
 const plannedPutAwayQuantity = computed(() =>
   putAwayPlanList.value.reduce((sum, item) => sum + Number(item.quantity || 0), 0),
@@ -310,12 +408,12 @@ const loadProducts = async () => {
   }
 }
 
-const loadCustomers = async () => {
+const loadShippableOrderList = async () => {
   try {
-    const res = await getCustomerList({ pageSize: 1000 })
-    customerList.value = res.data.records || []
+    const res = await getShippableOrders()
+    shippableOrderList.value = res.data || []
   } catch (error) {
-    console.error('加载客户列表失败:', error)
+    console.error('加载可出库工单失败:', error)
   }
 }
 
@@ -398,6 +496,21 @@ const handleStockReset = () => {
   loadStockList()
 }
 
+const handleViewDistribution = (row: ProductStock) => {
+  const itemId = String(row.pId || '')
+  if (!itemId) {
+    ElMessage.error('未获取到产品ID，无法查询仓库分布')
+    return
+  }
+
+  const itemName = row.pName || ''
+  router.push({
+    name: 'ProductStockDistribution',
+    params: { itemId },
+    query: { itemName },
+  })
+}
+
 const handlePendingSearch = () => {
   pendingPagination.pageNum = 1
   loadPendingList()
@@ -453,11 +566,16 @@ const openPutAwayDialog = async (row: ProductPending) => {
   }
 }
 
-const openShipDialog = () => {
+const openShipDialog = async () => {
+  await loadShippableOrderList()
+  if (shippableOrderList.value.length === 0) {
+    ElMessage.warning('当前没有可出库的客户工单')
+    return
+  }
+
   shipDialogVisible.value = true
-  shipForm.pId = 0
+  shipForm.woId = ''
   shipForm.quantity = 0
-  shipForm.customerName = ''
 }
 
 const handleAddPutAwayPlan = async () => {
@@ -548,12 +666,16 @@ const handleShipSubmit = async () => {
       return
     }
 
+    if (shipForm.quantity > shipMaxQty.value) {
+      ElMessage.error(`出库数量不能超过可出库库存: ${shipMaxQty.value}`)
+      return
+    }
+
     try {
       shipSubmitting.value = true
       await shipProductStock({
-        pId: shipForm.pId,
+        woId: shipForm.woId || undefined,
         quantity: shipForm.quantity,
-        customerName: shipForm.customerName || undefined,
       })
       ElMessage.success('产品出库成功')
       shipDialogVisible.value = false
@@ -571,7 +693,6 @@ const handleShipSubmit = async () => {
 
 onMounted(() => {
   loadProducts()
-  loadCustomers()
   loadWarehouses()
   loadStockList()
 })

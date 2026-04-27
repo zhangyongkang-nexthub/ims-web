@@ -80,6 +80,11 @@ const router = createRouter({
           name: 'ProductStockManagement',
           component: () => import('@/views/ProductStockManagement.vue'),
         },
+        {
+          path: 'stock/product/distribution/:itemId',
+          name: 'ProductStockDistribution',
+          component: () => import('@/views/ProductStockDistribution.vue'),
+        },
         // 基础模块
         {
           path: 'base/recipe',
@@ -126,7 +131,17 @@ const router = createRouter({
         {
           path: 'order/order',
           name: 'OrderManagement',
-          component: () => import('@/views/OrderManagement.vue'),
+          component: () => import('@/views/WorkOrderManagement.vue'),
+        },
+        {
+          path: 'order/work-order',
+          name: 'WorkOrderManagement',
+          component: () => import('@/views/WorkOrderManagement.vue'),
+        },
+        {
+          path: 'order/work-order/:woId',
+          name: 'WorkOrderDetail',
+          component: () => import('@/views/WorkOrderDetail.vue'),
         },
         // 字典模块
         {

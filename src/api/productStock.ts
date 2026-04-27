@@ -36,11 +36,30 @@ export interface ProductReceiveRecord {
 export interface ProductShipRecord {
   shipId: string
   shipNo?: string
+  woId?: string
+  woNo?: string
+  pId?: number
+  productName?: string
   batchNo?: string
   customerName?: string
   quantity: number
   shipTime?: string
   operatorId?: string
+}
+
+export interface ShippableOrder {
+  woId: string
+  woNo: string
+  pId: number
+  productName?: string
+  customerId?: string
+  customerName?: string
+  targetQty?: number
+  completedQty?: number
+  alreadyShipped?: number
+  shippableQty?: number
+  currentStock?: number
+  status?: number
 }
 
 export interface ProductReceiveForm {
@@ -54,7 +73,8 @@ export interface ProductReceiveForm {
 }
 
 export interface ProductShipForm {
-  pId: number
+  woId?: string
+  pId?: number
   batchNo?: string
   quantity: number
   customerName?: string
@@ -107,7 +127,10 @@ function normalizeReceiveRecord(raw: any): ProductReceiveRecord {
     pName: raw?.pName,
     quantity: Number(raw?.quantity ?? 0),
     uom: raw?.uom,
-    operatorId: raw?.operatorId !== undefined && raw?.operatorId !== null ? String(raw?.operatorId) : undefined,
+    operatorId:
+      raw?.operatorId !== undefined && raw?.operatorId !== null
+        ? String(raw?.operatorId)
+        : undefined,
     createTime: raw?.createTime,
   }
 }
@@ -116,11 +139,51 @@ function normalizeShipRecord(raw: any): ProductShipRecord {
   return {
     shipId: String(raw?.shipId ?? ''),
     shipNo: raw?.shipNo,
+    woId: raw?.woId !== undefined && raw?.woId !== null ? String(raw?.woId) : undefined,
+    woNo: raw?.woNo,
+    pId: raw?.pId !== undefined && raw?.pId !== null ? Number(raw?.pId) : undefined,
+    productName: raw?.productName ?? raw?.pName,
     batchNo: raw?.batchNo,
     customerName: raw?.customerName,
     quantity: Number(raw?.quantity ?? 0),
     shipTime: raw?.shipTime,
-    operatorId: raw?.operatorId !== undefined && raw?.operatorId !== null ? String(raw?.operatorId) : undefined,
+    operatorId:
+      raw?.operatorId !== undefined && raw?.operatorId !== null
+        ? String(raw?.operatorId)
+        : undefined,
+  }
+}
+
+function normalizeShippableOrder(raw: any): ShippableOrder {
+  return {
+    woId: String(raw?.woId ?? ''),
+    woNo: raw?.woNo ?? '',
+    pId: Number(raw?.pId ?? 0),
+    productName: raw?.productName,
+    customerId:
+      raw?.customerId !== undefined && raw?.customerId !== null
+        ? String(raw?.customerId)
+        : undefined,
+    customerName: raw?.customerName,
+    targetQty:
+      raw?.targetQty !== undefined && raw?.targetQty !== null ? Number(raw?.targetQty) : undefined,
+    completedQty:
+      raw?.completedQty !== undefined && raw?.completedQty !== null
+        ? Number(raw?.completedQty)
+        : undefined,
+    alreadyShipped:
+      raw?.alreadyShipped !== undefined && raw?.alreadyShipped !== null
+        ? Number(raw?.alreadyShipped)
+        : undefined,
+    shippableQty:
+      raw?.shippableQty !== undefined && raw?.shippableQty !== null
+        ? Number(raw?.shippableQty)
+        : undefined,
+    currentStock:
+      raw?.currentStock !== undefined && raw?.currentStock !== null
+        ? Number(raw?.currentStock)
+        : undefined,
+    status: raw?.status !== undefined && raw?.status !== null ? Number(raw?.status) : undefined,
   }
 }
 
@@ -186,19 +249,28 @@ export function shipProductStock(data: ProductShipForm) {
   return request.post<ApiResponse>('/product-stock/ship', data)
 }
 
+export function getShippableOrders() {
+  return request.get<ApiResponse<any[]>>('/product-stock/shippable-orders').then((res) => ({
+    ...res,
+    data: (res.data || []).map(normalizeShippableOrder),
+  }))
+}
+
 export function getProductReceiveRecordList(params: {
   pageNum?: number
   pageSize?: number
   pId?: number
   batchNo?: string
 }) {
-  return request.get<ApiResponse<PageResult<any>>>('/product-stock/receive-records', { params }).then((res) => ({
-    ...res,
-    data: {
-      ...res.data,
-      records: (res.data.records || []).map(normalizeReceiveRecord),
-    },
-  }))
+  return request
+    .get<ApiResponse<PageResult<any>>>('/product-stock/receive-records', { params })
+    .then((res) => ({
+      ...res,
+      data: {
+        ...res.data,
+        records: (res.data.records || []).map(normalizeReceiveRecord),
+      },
+    }))
 }
 
 export function getProductShipRecordList(params: {
@@ -207,11 +279,13 @@ export function getProductShipRecordList(params: {
   batchNo?: string
   customerName?: string
 }) {
-  return request.get<ApiResponse<PageResult<any>>>('/product-stock/ship-records', { params }).then((res) => ({
-    ...res,
-    data: {
-      ...res.data,
-      records: (res.data.records || []).map(normalizeShipRecord),
-    },
-  }))
+  return request
+    .get<ApiResponse<PageResult<any>>>('/product-stock/ship-records', { params })
+    .then((res) => ({
+      ...res,
+      data: {
+        ...res.data,
+        records: (res.data.records || []).map(normalizeShipRecord),
+      },
+    }))
 }
