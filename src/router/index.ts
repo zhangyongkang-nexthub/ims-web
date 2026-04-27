@@ -156,14 +156,24 @@ const router = createRouter({
         },
         // 设备模块
         {
+          path: 'equipment/equipment',
+          name: 'EquipmentManagement',
+          component: () => import('@/views/EquipmentManagement.vue'),
+        },
+        {
           path: 'equipment/station',
           name: 'StationManagement',
           component: () => import('@/views/StationManagement.vue'),
         },
         {
-          path: 'equipment/device',
+          path: 'equipment/device/:stationId?',
           name: 'DeviceManagement',
           component: () => import('@/views/DeviceManagement.vue'),
+        },
+        {
+          path: 'equipment/repair-order',
+          name: 'RepairOrderManagement',
+          component: () => import('@/views/RepairOrderManagement.vue'),
         },
       ],
     },

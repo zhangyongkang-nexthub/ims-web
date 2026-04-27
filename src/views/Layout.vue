@@ -82,11 +82,17 @@
               <el-icon><Monitor /></el-icon>
               <span>设备管理</span>
             </template>
+            <el-menu-item index="/equipment/equipment">
+              <span>生产设备</span>
+            </el-menu-item>
             <el-menu-item index="/equipment/station">
               <span>工位管理</span>
             </el-menu-item>
             <el-menu-item index="/equipment/device">
-              <span>设备管理</span>
+              <span>传感器管理</span>
+            </el-menu-item>
+            <el-menu-item index="/equipment/repair-order">
+              <span>维修工单</span>
             </el-menu-item>
           </el-sub-menu>
           <el-sub-menu index="system">
@@ -179,6 +185,15 @@ const activeMenu = computed(() => {
   if (route.path.startsWith('/base/wms/')) {
     return '/base/wms'
   }
+  if (route.path.startsWith('/material/stock/distribution/')) {
+    return '/material/stock'
+  }
+  if (route.path.startsWith('/stock/product/distribution/')) {
+    return '/stock/product'
+  }
+  if (route.path.startsWith('/equipment/device/')) {
+    return '/equipment/device'
+  }
   if (route.path.startsWith('/material/lot') || route.path.startsWith('/material/stock')) {
     return '/material/stock'
   }
@@ -205,11 +220,22 @@ const currentRoute = computed(() => {
     '/base/ai': 'AI辅助决策',
     '/base/wms': '仓库与库位管理',
     '/order/order': '工单管理',
+    '/equipment/equipment': '生产设备管理',
     '/equipment/station': '工位管理',
-    '/equipment/device': '设备管理',
+    '/equipment/device': '传感器管理',
+    '/equipment/repair-order': '维修工单管理',
   }
   if (route.path.startsWith('/base/wms/')) {
     return '库位管理'
+  }
+  if (route.path.startsWith('/material/stock/distribution/')) {
+    return '材料库存分布'
+  }
+  if (route.path.startsWith('/stock/product/distribution/')) {
+    return '产成品库存分布'
+  }
+  if (route.path.startsWith('/equipment/device/')) {
+    return '传感器管理'
   }
 
   return routeMap[route.path] || ''

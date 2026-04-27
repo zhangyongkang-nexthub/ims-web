@@ -1,26 +1,32 @@
 import type { ApiResponse } from './request'
 import request from './request'
 
-// 设备信息
+// 传感器信息
 export interface Device {
-  deviceId: number
+  deviceId: string
   stationId: number
   stationName?: string
+  equipId?: string
+  equipName?: string
   deviceCode: string
   deviceType: string
-  deviceModel?: string
+  kafkaTopic?: string
+  redisKey?: string
   status: number
+  statusLabel?: string
   createTime?: string
   updateTime?: string
 }
 
-// 设备表单
+// 传感器表单
 export interface DeviceForm {
-  deviceId?: number
+  deviceId?: string
   stationId: number
+  equipId?: string
   deviceCode?: string
   deviceType: string
-  deviceModel?: string
+  kafkaTopic?: string
+  redisKey?: string
   status: number
 }
 
@@ -45,7 +51,7 @@ export function getDeviceList(params: {
 /**
  * 获取设备详情
  */
-export function getDeviceDetail(deviceId: number) {
+export function getDeviceDetail(deviceId: string | number) {
   return request.get<ApiResponse<Device>>(`/devices/${deviceId}`)
 }
 
@@ -59,13 +65,13 @@ export function addDevice(data: DeviceForm) {
 /**
  * 修改设备
  */
-export function updateDevice(deviceId: number, data: Partial<DeviceForm>) {
+export function updateDevice(deviceId: string | number, data: Partial<DeviceForm>) {
   return request.put<ApiResponse>(`/devices/${deviceId}`, data)
 }
 
 /**
  * 删除设备
  */
-export function deleteDevice(deviceId: number) {
+export function deleteDevice(deviceId: string | number) {
   return request.delete<ApiResponse>(`/devices/${deviceId}`)
 }
