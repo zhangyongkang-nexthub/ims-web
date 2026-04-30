@@ -112,6 +112,11 @@ const router = createRouter({
           component: () => import('@/views/WmsManagement.vue'),
         },
         {
+          path: 'base/schedule',
+          name: 'ScheduleManagement',
+          component: () => import('@/views/ScheduleManagement.vue'),
+        },
+        {
           path: 'base/wms/:whId/locations',
           name: 'WarehouseLocationManagement',
           component: () => import('@/views/WarehouseLocationManagement.vue'),

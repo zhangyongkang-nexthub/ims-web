@@ -67,6 +67,9 @@
               <el-icon><DocumentCopy /></el-icon>
               <span>基础管理</span>
             </template>
+            <el-menu-item index="/base/schedule">
+              <span>排班与交接班</span>
+            </el-menu-item>
             <el-menu-item index="/base/alarm">
               <span>异常报警</span>
             </el-menu-item>
@@ -216,6 +219,7 @@ const currentRoute = computed(() => {
     '/material/stock': '材料库存',
     '/stock/product': '产成品库存',
     '/base/recipe': '配方管理',
+    '/base/schedule': '排班与交接班',
     '/base/alarm': '异常报警',
     '/base/ai': 'AI辅助决策',
     '/base/wms': '仓库与库位管理',
