@@ -159,6 +159,9 @@
       <el-table :data="detailData?.sensors || []" stripe style="width: 100%; margin-top: 8px">
         <el-table-column prop="deviceCode" label="传感器编码" width="170" />
         <el-table-column prop="deviceType" label="类型" width="100" />
+        <el-table-column label="分析类别" min-width="180">
+          <template #default="{ row }">{{ row.sensorCategoryLabel || '—' }}</template>
+        </el-table-column>
         <el-table-column prop="kafkaTopic" label="Kafka Topic" min-width="180" />
         <el-table-column prop="redisKey" label="Redis Key" min-width="180" />
         <el-table-column prop="statusLabel" label="状态" width="90" />

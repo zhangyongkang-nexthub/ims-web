@@ -236,8 +236,13 @@ const rules = {
 
 const filteredRecipes = computed(() => recipeList.value.filter((r) => r.pid === formData.pId))
 
-const statusTagType = (status: number) => {
-  const map: Record<number, string> = { 0: 'info', 1: '', 2: 'success', 3: 'danger' }
+const statusTagType = (status: number): 'info' | 'warning' | 'success' | 'danger' => {
+  const map: Record<number, 'info' | 'warning' | 'success' | 'danger'> = {
+    0: 'info',
+    1: 'warning',
+    2: 'success',
+    3: 'danger',
+  }
   return map[status] ?? 'info'
 }
 

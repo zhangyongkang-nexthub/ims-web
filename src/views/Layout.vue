@@ -73,11 +73,38 @@
             <el-menu-item index="/base/alarm">
               <span>异常报警</span>
             </el-menu-item>
-            <el-menu-item index="/base/ai">
-              <span>AI辅助决策</span>
-            </el-menu-item>
             <el-menu-item index="/base/wms">
               <span>仓库与库位管理</span>
+            </el-menu-item>
+          </el-sub-menu>
+          <el-sub-menu index="ai">
+            <template #title>
+              <el-icon><DataAnalysis /></el-icon>
+              <span>AI辅助决策</span>
+            </template>
+            <el-menu-item index="/ai/chat">
+              <span>AI智能问答</span>
+            </el-menu-item>
+            <el-menu-item index="/ai/dashboard">
+              <span>实时监控大屏</span>
+            </el-menu-item>
+            <el-menu-item index="/ai/decisions">
+              <span>决策日志</span>
+            </el-menu-item>
+            <el-menu-item index="/ai/knowledge">
+              <span>知识库管理</span>
+            </el-menu-item>
+            <el-menu-item index="/ai/rules">
+              <span>规则配置</span>
+            </el-menu-item>
+            <el-menu-item index="/ai/settings">
+              <span>模型配置</span>
+            </el-menu-item>
+            <el-menu-item index="/ai/batch-quality">
+              <span>批次质量报告</span>
+            </el-menu-item>
+            <el-menu-item index="/ai/device-report">
+              <span>设备运行日报</span>
             </el-menu-item>
           </el-sub-menu>
           <el-sub-menu index="equipment">
@@ -167,6 +194,7 @@ import {
   Avatar,
   Box,
   Collection,
+  DataAnalysis,
   DocumentCopy,
   Goods,
   Menu,
@@ -221,13 +249,20 @@ const currentRoute = computed(() => {
     '/base/recipe': '配方管理',
     '/base/schedule': '排班与交接班',
     '/base/alarm': '异常报警',
-    '/base/ai': 'AI辅助决策',
     '/base/wms': '仓库与库位管理',
     '/order/order': '工单管理',
     '/equipment/equipment': '生产设备管理',
     '/equipment/station': '工位管理',
     '/equipment/device': '传感器管理',
     '/equipment/repair-order': '维修工单管理',
+    '/ai/chat': 'AI智能问答',
+    '/ai/dashboard': 'AI实时监控大屏',
+    '/ai/decisions': '决策日志',
+    '/ai/knowledge': '知识库管理',
+    '/ai/rules': '规则配置',
+    '/ai/settings': '模型配置',
+    '/ai/batch-quality': '批次质量报告',
+    '/ai/device-report': '设备运行日报',
   }
   if (route.path.startsWith('/base/wms/')) {
     return '库位管理'

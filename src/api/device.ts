@@ -9,7 +9,10 @@ export interface Device {
   equipId?: string
   equipName?: string
   deviceCode: string
+  deviceName?: string
   deviceType: string
+  sensorCategory?: 'PROCESS' | 'PER_BOTTLE' | null
+  sensorCategoryLabel?: string
   kafkaTopic?: string
   redisKey?: string
   status: number
@@ -24,7 +27,9 @@ export interface DeviceForm {
   stationId: number
   equipId?: string
   deviceCode?: string
+  deviceName?: string
   deviceType: string
+  sensorCategory?: 'PROCESS' | 'PER_BOTTLE' | null
   kafkaTopic?: string
   redisKey?: string
   status: number
@@ -43,6 +48,7 @@ export function getDeviceList(params: {
   pageNum?: number
   pageSize?: number
   searchKey?: string
+  deviceName?: string
   stationId?: number
 }) {
   return request.get<ApiResponse<PageResult<Device>>>('/devices', { params })

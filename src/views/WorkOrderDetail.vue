@@ -208,8 +208,13 @@ const canStartBatch = computed(() => {
   return (s === 0 || s === 1) && !hasRunningBatch.value && remaining.value > 0
 })
 
-const statusTagType = (status: number) => {
-  const map: Record<number, string> = { 0: 'info', 1: '', 2: 'success', 3: 'danger' }
+const statusTagType = (status: number): 'info' | 'warning' | 'success' | 'danger' => {
+  const map: Record<number, 'info' | 'warning' | 'success' | 'danger'> = {
+    0: 'info',
+    1: 'warning',
+    2: 'success',
+    3: 'danger',
+  }
   return map[status] ?? 'info'
 }
 

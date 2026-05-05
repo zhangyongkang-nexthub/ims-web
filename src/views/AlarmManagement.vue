@@ -46,6 +46,12 @@
         <el-table-column prop="alarmId" label="报警ID" width="90" />
         <el-table-column prop="batchNo" label="批次号" width="140" />
         <el-table-column prop="deviceCode" label="设备编码" width="120" />
+        <el-table-column label="计入不良品" width="130">
+          <template #default="scope">
+            <el-tag v-if="isBadQtyCounted(scope.row.deviceCode)" type="danger">已计入</el-tag>
+            <el-tag v-else type="info">未计入</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column prop="processType" label="工艺类型" width="100" />
         <el-table-column label="报警等级" width="100">
           <template #default="scope">
@@ -121,6 +127,7 @@
 
 <script setup lang="ts">
 import { getAlarmList, getUnhandledAlarmCount, handleAlarm, type AlarmRecord } from '@/api/alarm'
+import { getDeviceList } from '@/api/device'
 import { onAlarmPush } from '@/utils/alarmWs'
 import type { FormInstance } from 'element-plus'
 import { ElMessage } from 'element-plus'
@@ -133,6 +140,7 @@ const tableData = ref<AlarmRecord[]>([])
 const unhandledCount = ref(0)
 const formRef = ref<FormInstance>()
 const refreshTimer = ref<number | null>(null)
+const sensorCategoryMap = ref<Record<string, 'PROCESS' | 'PER_BOTTLE' | null>>({})
 let stopAlarmListener: (() => void) | null = null
 
 const pagination = reactive({
@@ -163,6 +171,21 @@ const levelTagType = (level: string) => {
   if (level === 'WARNING') return 'warning'
   if (level === 'INFO') return 'info'
   return 'primary'
+}
+
+const isBadQtyCounted = (deviceCode: string) => {
+  return sensorCategoryMap.value[deviceCode] === 'PER_BOTTLE'
+}
+
+const loadDeviceCategories = async () => {
+  const res = await getDeviceList({ pageNum: 1, pageSize: 1000 })
+  sensorCategoryMap.value = res.data.records.reduce<Record<string, 'PROCESS' | 'PER_BOTTLE' | null>>(
+    (acc, item) => {
+      acc[item.deviceCode] = item.sensorCategory || null
+      return acc
+    },
+    {},
+  )
 }
 
 const getList = async () => {
@@ -247,7 +270,7 @@ const submitHandle = async () => {
 }
 
 onMounted(async () => {
-  await Promise.all([getList(), refreshCount()])
+  await Promise.all([getList(), refreshCount(), loadDeviceCategories()])
   stopAlarmListener = onAlarmPush(() => {
     scheduleRefresh()
   })

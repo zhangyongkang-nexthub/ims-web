@@ -11,7 +11,7 @@
       <div class="search-form">
         <el-input
           v-model="searchForm.searchKey"
-          placeholder="搜索传感器编码"
+          placeholder="搜索传感器编码/名称"
           clearable
           class="search-input"
         />
@@ -35,7 +35,13 @@
 
       <el-table :data="tableData" stripe style="width: 100%" v-loading="loading">
         <el-table-column prop="deviceCode" label="传感器编码" width="180" />
+        <el-table-column prop="deviceName" label="传感器名称" min-width="160" />
         <el-table-column prop="deviceType" label="类型" width="100" />
+        <el-table-column label="分析类别" min-width="180">
+          <template #default="{ row }">
+            {{ row.sensorCategoryLabel || getSensorCategoryLabel(row.sensorCategory) }}
+          </template>
+        </el-table-column>
         <el-table-column prop="stationName" label="工位" width="140" />
         <el-table-column prop="equipName" label="挂载设备" width="160" />
         <el-table-column prop="kafkaTopic" label="Kafka Topic" min-width="180" />
@@ -99,11 +105,24 @@
         <el-form-item label="传感器编码" prop="deviceCode">
           <el-input v-model="formData.deviceCode" />
         </el-form-item>
+        <el-form-item label="传感器名称" prop="deviceName">
+          <el-input v-model="formData.deviceName" />
+        </el-form-item>
         <el-form-item label="传感器类型" prop="deviceType">
           <el-select v-model="formData.deviceType" placeholder="选择类型">
             <el-option label="TEMP" value="TEMP" />
             <el-option label="FLOW" value="FLOW" />
             <el-option label="PRESS" value="PRESS" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="分析类别">
+          <el-select
+            v-model="formData.sensorCategory"
+            placeholder="请选择分析类别（可选）"
+            clearable
+          >
+            <el-option label="工艺环境（趋势预测）" value="PROCESS" />
+            <el-option label="逐瓶检测（设备精度评估）" value="PER_BOTTLE" />
           </el-select>
         </el-form-item>
         <el-form-item label="Kafka Topic">
@@ -163,15 +182,28 @@ const formData = reactive<DeviceForm>({
   stationId: 0,
   equipId: undefined,
   deviceCode: '',
+  deviceName: '',
   deviceType: 'TEMP',
+  sensorCategory: undefined,
   kafkaTopic: '',
   redisKey: '',
   status: 1,
 })
 
+const sensorCategoryLabelMap: Record<'PROCESS' | 'PER_BOTTLE', string> = {
+  PROCESS: '工艺环境（趋势预测）',
+  PER_BOTTLE: '逐瓶检测（设备精度评估）',
+}
+
+const getSensorCategoryLabel = (sensorCategory?: 'PROCESS' | 'PER_BOTTLE' | null) => {
+  if (!sensorCategory) return '—'
+  return sensorCategoryLabelMap[sensorCategory] || '—'
+}
+
 const rules = {
   stationId: [{ required: true, message: '工位不能为空', trigger: 'change' }],
   deviceCode: [{ required: true, message: '传感器编码不能为空', trigger: 'blur' }],
+  deviceName: [{ required: true, message: '传感器名称不能为空', trigger: 'blur' }],
   deviceType: [{ required: true, message: '传感器类型不能为空', trigger: 'change' }],
 }
 
@@ -187,6 +219,7 @@ const getList = async () => {
       pageNum: pagination.pageNum,
       pageSize: pagination.pageSize,
       searchKey: searchForm.searchKey || undefined,
+      deviceName: searchForm.searchKey || undefined,
       stationId: searchForm.stationId,
     })
     tableData.value = res.data.records
@@ -234,7 +267,9 @@ const openDialog = (type: 'add' | 'edit') => {
     formData.stationId = searchForm.stationId || 0
     formData.equipId = undefined
     formData.deviceCode = ''
+    formData.deviceName = ''
     formData.deviceType = 'TEMP'
+    formData.sensorCategory = undefined
     formData.kafkaTopic = ''
     formData.redisKey = ''
     formData.status = 1
@@ -249,7 +284,9 @@ const handleEdit = (row: Device) => {
   formData.stationId = row.stationId
   formData.equipId = row.equipId
   formData.deviceCode = row.deviceCode
+  formData.deviceName = row.deviceName || ''
   formData.deviceType = row.deviceType
+  formData.sensorCategory = row.sensorCategory || undefined
   formData.kafkaTopic = row.kafkaTopic || ''
   formData.redisKey = row.redisKey || ''
   formData.status = row.status
@@ -274,11 +311,15 @@ const handleSubmit = async () => {
 }
 
 const handleDelete = (row: Device) => {
-  ElMessageBox.confirm(`确定删除传感器「${row.deviceCode}」吗？`, '警告', {
+  ElMessageBox.confirm(
+    `确定删除传感器「${row.deviceName || row.deviceCode}（${row.deviceCode}）」吗？`,
+    '警告',
+    {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning',
-  })
+    },
+  )
     .then(async () => {
       await deleteDevice(row.deviceId)
       ElMessage.success('删除成功')

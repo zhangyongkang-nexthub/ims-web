@@ -101,10 +101,46 @@ const router = createRouter({
           name: 'AlarmManagement',
           component: () => import('@/views/AlarmManagement.vue'),
         },
+        // AI辅助决策模块
         {
-          path: 'base/ai',
-          name: 'AiAnalysisManagement',
-          component: () => import('@/views/AiAnalysisManagement.vue'),
+          path: 'ai/dashboard',
+          name: 'AiDashboard',
+          component: () => import('@/views/AiDashboard.vue'),
+        },
+        {
+          path: 'ai/chat',
+          name: 'AiChat',
+          component: () => import('@/views/AiChat.vue'),
+        },
+        {
+          path: 'ai/decisions',
+          name: 'AiDecisions',
+          component: () => import('@/views/AiDecisions.vue'),
+        },
+        {
+          path: 'ai/knowledge',
+          name: 'AiKnowledge',
+          component: () => import('@/views/AiKnowledge.vue'),
+        },
+        {
+          path: 'ai/rules',
+          name: 'AiRules',
+          component: () => import('@/views/AiRules.vue'),
+        },
+        {
+          path: 'ai/settings',
+          name: 'AiModelSettings',
+          component: () => import('@/views/AiModelSettings.vue'),
+        },
+        {
+          path: 'ai/batch-quality',
+          name: 'BatchQualityReport',
+          component: () => import('@/views/BatchQualityReport.vue'),
+        },
+        {
+          path: 'ai/device-report',
+          name: 'AiDeviceReport',
+          component: () => import('@/views/AiDeviceReport.vue'),
         },
         {
           path: 'base/wms',
